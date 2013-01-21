@@ -25,6 +25,7 @@
 
 #include <asm/cacheflush.h>
 #include <asm/hardware/cache-l2x0.h>
+#include <asm/firmware.h>
 #include "cache-tauros3.h"
 #include "cache-aurora-l2.h"
 
@@ -1002,6 +1003,8 @@ int __init l2x0_of_init(u32 aux_val, u32 aux_mask)
 
 	if (data->save)
 		data->save();
+
+	call_firmware_op(l2x0_init);
 
 	of_init = true;
 	memcpy(&outer_cache, &data->outer_cache, sizeof(outer_cache));
