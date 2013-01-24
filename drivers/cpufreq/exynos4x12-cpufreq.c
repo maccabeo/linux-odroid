@@ -24,11 +24,39 @@ static struct clk *moutcore;
 static struct clk *mout_mpll;
 static struct clk *mout_apll;
 
+#if defined(CONFIG_BOARD_ODROID_U2)
+static unsigned int exynos4x12_volt_table[] = {
+	1350000, 1350000, 1350000, 1287500, 1250000, 1187500, 1137500, 1087500,
+	1037500, 1000000,  987500,  975000,  950000,  925000,  900000,  900000
+};
+#else
 static unsigned int exynos4x12_volt_table[] = {
 	1350000, 1287500, 1250000, 1187500, 1137500, 1087500, 1037500,
 	1000000,  987500,  975000,  950000,  925000,  900000,  900000
 };
+#endif
 
+#if defined(CONFIG_BOARD_ODROID_U2)
+static struct cpufreq_frequency_table exynos4x12_freq_table[] = {
+	{L0, 1704 * 1000},
+	{L1, 1600 * 1000},
+	{L2, 1500 * 1000},
+	{L3, 1400 * 1000},
+	{L4, 1300 * 1000},
+	{L5, 1200 * 1000},
+	{L6, 1100 * 1000},
+	{L7, 1000 * 1000},
+	{L8,  900 * 1000},
+	{L9,  800 * 1000},
+	{L10, 700 * 1000},
+	{L11, 600 * 1000},
+	{L12, 500 * 1000},
+	{L13, 400 * 1000},
+	{L14, 300 * 1000},
+	{L15, 200 * 1000},
+	{0, CPUFREQ_TABLE_END},
+};
+#else
 static struct cpufreq_frequency_table exynos4x12_freq_table[] = {
 	{CPUFREQ_BOOST_FREQ, 1500 * 1000},
 	{L1, 1400 * 1000},
@@ -46,6 +74,7 @@ static struct cpufreq_frequency_table exynos4x12_freq_table[] = {
 	{L13, 200 * 1000},
 	{0, CPUFREQ_TABLE_END},
 };
+#endif
 
 static struct apll_freq *apll_freq_4x12;
 
@@ -81,6 +110,10 @@ static struct apll_freq apll_freq_4412[] = {
 	 * clock divider for COPY, HPM, CORES
 	 * PLL M, P, S
 	 */
+#if defined(CONFIG_BOARD_ODROID_U2)
+	APLL_FREQ(1704, 0, 3, 7, 0, 6, 1, 2, 0, 6, 0, 7, 213, 3, 0),
+	APLL_FREQ(1600, 0, 3, 7, 0, 6, 1, 2, 0, 6, 0, 7, 200, 3, 0),
+#endif
 	APLL_FREQ(1500, 0, 3, 7, 0, 6, 1, 2, 0, 6, 0, 7, 250, 4, 0),
 	APLL_FREQ(1400, 0, 3, 7, 0, 6, 1, 2, 0, 6, 0, 6, 175, 3, 0),
 	APLL_FREQ(1300, 0, 3, 7, 0, 5, 1, 2, 0, 5, 0, 6, 325, 6, 0),
