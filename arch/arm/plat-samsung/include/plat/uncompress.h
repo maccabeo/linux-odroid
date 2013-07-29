@@ -32,7 +32,7 @@ static void arch_detect_cpu(void);
 #include <plat/regs-serial.h>
 
 /* working in physical space... */
-#define S3C_WDOGREG(x)	((S3C_PA_WDT + (x)))
+#define S3C_WDOGREG(x)	((EXYNOS4_PA_WATCHDOG + (x)))
 
 #define S3C2410_WTCON	S3C_WDOGREG(0x00)
 #define S3C2410_WTDAT	S3C_WDOGREG(0x04)
