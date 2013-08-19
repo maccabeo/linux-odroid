@@ -170,6 +170,7 @@ static void samsung_usb2phy_enable(struct samsung_usbphy *sphy)
 	phypwr = readl(regs + SAMSUNG_PHYPWR);
 	rstcon = readl(regs + SAMSUNG_RSTCON);
 
+printk("phy enable A\n");
 	switch (sphy->drv_data->cpu_type) {
 	case TYPE_S3C64XX:
 		phyclk &= ~PHYCLK_COMMON_ON_N;
@@ -177,27 +178,50 @@ static void samsung_usb2phy_enable(struct samsung_usbphy *sphy)
 		rstcon |= RSTCON_SWRST;
 		break;
 	case TYPE_EXYNOS4X12:
-		phypwr &= ~(PHYPWR_NORMAL_MASK_HSIC0 |
-				PHYPWR_NORMAL_MASK_HSIC1 |
-				PHYPWR_NORMAL_MASK_PHY1);
-		rstcon |= RSTCON_HOSTPHY_SWRST;
+		phyclk &= ~(PHYCLK_COMMON_ON_N
+			    | PHYCLK_COMMON_ON_N_PHY1);
+		phypwr &= ~PHYPWR_NORMAL_MASK_PHY0;
+		rstcon |= RSTCON_PHYLINK_SWRST_MASK;
+		break;
 	case TYPE_EXYNOS4210:
 		phypwr &= ~PHYPWR_NORMAL_MASK_PHY0;
 		rstcon |= RSTCON_SWRST;
+		break;
 	default:
 		break;
 	}
 
 	writel(phyclk, regs + SAMSUNG_PHYCLK);
+
 	/* Configure PHY0 for normal operation*/
 	writel(phypwr, regs + SAMSUNG_PHYPWR);
+
+	/* Configure PHY1 for normal operation*/
+	if (sphy->drv_data->cpu_type == TYPE_EXYNOS4X12) {
+		phypwr = readl(regs + SAMSUNG_PHYPWR);
+		phypwr &= ~(PHYPWR_NORMAL_MASK_HSIC0 |
+				PHYPWR_NORMAL_MASK_HSIC1 |
+				PHYPWR_NORMAL_MASK_PHY1);
+		writel(phypwr, regs + SAMSUNG_PHYPWR);
+	}
+
 	/* reset all ports of PHY and Link */
 	writel(rstcon, regs + SAMSUNG_RSTCON);
 	udelay(10);
-	if (sphy->drv_data->cpu_type == TYPE_EXYNOS4X12)
-		rstcon &= ~RSTCON_HOSTPHY_SWRST;
-	rstcon &= ~RSTCON_SWRST;
+	rstcon &= ~RSTCON_PHYLINK_SWRST_MASK;
 	writel(rstcon, regs + SAMSUNG_RSTCON);
+
+	if (sphy->drv_data->cpu_type == TYPE_EXYNOS4X12) {
+		rstcon = readl(regs + SAMSUNG_RSTCON);
+		rstcon |= (RSTCON_HOSTPHY_SWRST
+			   | EXYNOS4X12_RSTCON_HLINK_SWRST_MASK);
+		writel(rstcon, regs + SAMSUNG_RSTCON);
+		udelay(10);
+		rstcon &= ~(RSTCON_HOSTPHY_SWRST
+			   | EXYNOS4X12_RSTCON_HLINK_SWRST_MASK);
+		writel(rstcon, regs + SAMSUNG_RSTCON);
+		udelay(80);
+	}
 }
 
 static void samsung_exynos5_usb2phy_disable(struct samsung_usbphy *sphy)
@@ -242,16 +266,23 @@ static void samsung_usb2phy_disable(struct samsung_usbphy *sphy)
 
 	phypwr = readl(regs + SAMSUNG_PHYPWR);
 
+printk("phy disable A\n");
 	switch (sphy->drv_data->cpu_type) {
 	case TYPE_S3C64XX:
 		phypwr |= PHYPWR_NORMAL_MASK;
 		break;
 	case TYPE_EXYNOS4X12:
+		phypwr |= PHYPWR_NORMAL_MASK_PHY0;
+		writel(phypwr, regs + SAMSUNG_PHYPWR);
+
+		phypwr = readl(regs + SAMSUNG_PHYPWR);
 		phypwr |= (PHYPWR_NORMAL_MASK_HSIC0 |
 				PHYPWR_NORMAL_MASK_HSIC1 |
 				PHYPWR_NORMAL_MASK_PHY1);
+		break;
 	case TYPE_EXYNOS4210:
 		phypwr |= PHYPWR_NORMAL_MASK_PHY0;
+		break;
 	default:
 		break;
 	}
@@ -274,6 +305,7 @@ static int samsung_usb2phy_init(struct usb_phy *phy)
 
 	host = phy->otg->host;
 
+printk("phy init A\n");
 	/* Enable the phy clock */
 	ret = clk_prepare_enable(sphy->clk);
 	if (ret) {
@@ -286,17 +318,23 @@ static int samsung_usb2phy_init(struct usb_phy *phy)
 	if (host) {
 		/* setting default phy-type for USB 2.0 */
 		if (!strstr(dev_name(host->controller), "ehci") ||
-				!strstr(dev_name(host->controller), "ohci"))
+				!strstr(dev_name(host->controller), "ohci")) {
 			samsung_usbphy_set_type(&sphy->phy, USB_PHY_TYPE_HOST);
+printk("phy init B: host\n");
+		}
 	} else {
+printk("phy init B: device\n");
 		samsung_usbphy_set_type(&sphy->phy, USB_PHY_TYPE_DEVICE);
 	}
 
 	/* Disable phy isolation */
-	if (sphy->plat && sphy->plat->pmu_isolation)
+	if (sphy->plat && sphy->plat->pmu_isolation) {
 		sphy->plat->pmu_isolation(false);
-	else if (sphy->drv_data->set_isolation)
+printk("phy init C: pmu isolation disabled\n");
+	} else if (sphy->drv_data->set_isolation) {
 		sphy->drv_data->set_isolation(sphy, false);
+printk("phy init C: drv isolation disabled\n");
+	}
 
 	/* Selecting Host/OTG mode; After reset USB2.0PHY_CFG: HOST */
 	samsung_usbphy_cfg_sel(sphy);
@@ -308,6 +346,7 @@ static int samsung_usb2phy_init(struct usb_phy *phy)
 
 	/* Disable the phy clock */
 	clk_disable_unprepare(sphy->clk);
+printk("phy init D: END\n");
 
 	return ret;
 }
@@ -321,6 +360,7 @@ static void samsung_usb2phy_shutdown(struct usb_phy *phy)
 	struct usb_bus *host = NULL;
 	unsigned long flags;
 
+printk("samsung_usb2phy_shutdown: A\n");
 	sphy = phy_to_sphy(phy);
 
 	host = phy->otg->host;
@@ -367,6 +407,7 @@ static int samsung_usb2phy_probe(struct platform_device *pdev)
 	struct clk *clk;
 	int ret;
 
+printk("samsung_usb2phy_probe: A\n");
 	phy_mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	phy_base = devm_ioremap_resource(dev, phy_mem);
 	if (IS_ERR(phy_base))

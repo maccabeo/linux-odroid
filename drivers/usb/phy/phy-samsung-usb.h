@@ -32,6 +32,7 @@
 
 #define SAMSUNG_PHYCLK				(0x04)
 
+#define PHYCLK_COMMON_ON_N_PHY1			(0x1 << 7)
 #define PHYCLK_MODE_USB11			(0x1 << 6)
 #define PHYCLK_EXT_OSC				(0x1 << 5)
 #define PHYCLK_COMMON_ON_N			(0x1 << 4)
@@ -43,6 +44,7 @@
 
 #define SAMSUNG_RSTCON				(0x08)
 
+#define RSTCON_PHYLINK_SWRST_MASK		(0x7 << 0)
 #define RSTCON_PHYLINK_SWRST			(0x1 << 2)
 #define RSTCON_HLINK_SWRST			(0x1 << 1)
 #define RSTCON_SWRST				(0x1 << 0)
@@ -55,6 +57,7 @@
 #define PHYPWR_NORMAL_MASK_HSIC0		(0x7 << 9)
 #define PHYPWR_NORMAL_MASK_PHY1			(0x7 << 6)
 
+#define EXYNOS4X12_RSTCON_HLINK_SWRST_MASK	(0xf << 7)
 #define RSTCON_HOSTPHY_SWRST			(0xf << 3)
 
 /* EXYNOS5 */

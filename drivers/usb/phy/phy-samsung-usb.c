@@ -79,6 +79,7 @@ void samsung_usbphy_set_isolation_4210(struct samsung_usbphy *sphy, bool on)
 	u32 reg_val;
 	u32 en_mask = 0;
 
+printk("samsung_usbphy_set_isolation_4210: START (%d)\n", on);
 	if (!sphy->pmuregs) {
 		dev_warn(sphy->dev, "Can't set pmu isolation\n");
 		return;
@@ -87,9 +88,11 @@ void samsung_usbphy_set_isolation_4210(struct samsung_usbphy *sphy, bool on)
 	if (sphy->phy_type == USB_PHY_TYPE_DEVICE) {
 		reg = sphy->pmuregs + sphy->drv_data->devphy_reg_offset;
 		en_mask = sphy->drv_data->devphy_en_mask;
+printk("samsung_usbphy_set_isolation_4210: A (%d)\n", sphy->drv_data->devphy_reg_offset);
 	} else if (sphy->phy_type == USB_PHY_TYPE_HOST) {
 		reg = sphy->pmuregs + sphy->drv_data->hostphy_reg_offset;
 		en_mask = sphy->drv_data->hostphy_en_mask;
+printk("samsung_usbphy_set_isolation_4210: A (%d)\n", sphy->drv_data->hostphy_reg_offset);
 	}
 
 	reg_val = readl(reg);
@@ -102,9 +105,11 @@ void samsung_usbphy_set_isolation_4210(struct samsung_usbphy *sphy, bool on)
 	writel(reg_val, reg);
 
 	if (sphy->drv_data->cpu_type == TYPE_EXYNOS4X12) {
+printk("samsung_usbphy_set_isolation_4210: B\n");
 		writel(reg_val, sphy->pmuregs + EXYNOS4X12_PHY_HSIC_CTRL0);
 		writel(reg_val, sphy->pmuregs + EXYNOS4X12_PHY_HSIC_CTRL1);
 	}
+printk("samsung_usbphy_set_isolation_4210: END\n");
 }
 EXPORT_SYMBOL_GPL(samsung_usbphy_set_isolation_4210);
 
