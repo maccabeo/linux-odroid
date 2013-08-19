@@ -66,7 +66,7 @@ static uint32_t get_cell_size(const void *fdt)
 
 static void merge_fdt_bootargs(void *fdt, const char *fdt_cmdline)
 {
-	char cmdline[COMMAND_LINE_SIZE];
+	char cmdline[COMMAND_LINE_SIZE - 100];
 	const char *fdt_bootargs;
 	char *ptr = cmdline;
 	int len = 0;
@@ -74,7 +74,7 @@ static void merge_fdt_bootargs(void *fdt, const char *fdt_cmdline)
 	/* copy the fdt command line into the buffer */
 	fdt_bootargs = getprop(fdt, "/chosen", "bootargs", &len);
 	if (fdt_bootargs)
-		if (len < COMMAND_LINE_SIZE) {
+		if (len < COMMAND_LINE_SIZE - 100) {
 			memcpy(ptr, fdt_bootargs, len);
 			/* len is the length of the string
 			 * including the NULL terminator */
@@ -84,7 +84,7 @@ static void merge_fdt_bootargs(void *fdt, const char *fdt_cmdline)
 	/* and append the ATAG_CMDLINE */
 	if (fdt_cmdline) {
 		len = strlen(fdt_cmdline);
-		if (ptr - cmdline + len + 2 < COMMAND_LINE_SIZE) {
+		if (ptr - cmdline + len + 2 < COMMAND_LINE_SIZE - 100) {
 			*ptr++ = ' ';
 			memcpy(ptr, fdt_cmdline, len);
 			ptr += len;
