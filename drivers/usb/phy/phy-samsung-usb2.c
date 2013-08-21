@@ -158,6 +158,15 @@ static void samsung_exynos5_usb2phy_enable(struct samsung_usbphy *sphy)
 	writel(ohcictrl, regs + EXYNOS5_PHY_HOST_OHCICTRL);
 }
 
+static bool exynos4_phyhost_is_on(void __iomem *regs)
+{
+	u32 reg;
+
+	reg = readl(regs + SAMSUNG_PHYPWR);
+
+	return !(reg & PHYPWR_ANALOG_POWERDOWN_PHY1);
+}
+
 static void samsung_usb2phy_enable(struct samsung_usbphy *sphy)
 {
 	void __iomem *regs = sphy->regs;
@@ -186,17 +195,13 @@ printk("phy enable A\n");
 	case TYPE_EXYNOS4210:
 		phypwr &= ~PHYPWR_NORMAL_MASK_PHY0;
 		rstcon |= RSTCON_SWRST;
-		break;
 	default:
 		break;
 	}
 
 	writel(phyclk, regs + SAMSUNG_PHYCLK);
-
-	/* Configure PHY0 for normal operation*/
+	/* Configure PHY0 and PHY1 for normal operation*/
 	writel(phypwr, regs + SAMSUNG_PHYPWR);
-
-	/* Configure PHY1 for normal operation*/
 	if (sphy->drv_data->cpu_type == TYPE_EXYNOS4X12) {
 		phypwr = readl(regs + SAMSUNG_PHYPWR);
 		phypwr &= ~(PHYPWR_NORMAL_MASK_HSIC0 |
@@ -204,21 +209,22 @@ printk("phy enable A\n");
 				PHYPWR_NORMAL_MASK_PHY1);
 		writel(phypwr, regs + SAMSUNG_PHYPWR);
 	}
-
 	/* reset all ports of PHY and Link */
 	writel(rstcon, regs + SAMSUNG_RSTCON);
 	udelay(10);
-	rstcon &= ~RSTCON_PHYLINK_SWRST_MASK;
+	if (sphy->drv_data->cpu_type == TYPE_EXYNOS4X12) {
+		rstcon &= ~RSTCON_PHYLINK_SWRST_MASK;
+	} else
+		rstcon &= ~RSTCON_SWRST;
 	writel(rstcon, regs + SAMSUNG_RSTCON);
-
 	if (sphy->drv_data->cpu_type == TYPE_EXYNOS4X12) {
 		rstcon = readl(regs + SAMSUNG_RSTCON);
-		rstcon |= (RSTCON_HOSTPHY_SWRST
-			   | EXYNOS4X12_RSTCON_HLINK_SWRST_MASK);
+		rstcon |= RSTCON_HOSTPHY_SWRST;
+		rstcon |= EXYNOS4X12_RSTCON_HLINK_SWRST_MASK;
 		writel(rstcon, regs + SAMSUNG_RSTCON);
 		udelay(10);
-		rstcon &= ~(RSTCON_HOSTPHY_SWRST
-			   | EXYNOS4X12_RSTCON_HLINK_SWRST_MASK);
+		rstcon &= ~RSTCON_HOSTPHY_SWRST;
+		rstcon &= ~EXYNOS4X12_RSTCON_HLINK_SWRST_MASK;
 		writel(rstcon, regs + SAMSUNG_RSTCON);
 		udelay(80);
 	}
@@ -272,23 +278,21 @@ printk("phy disable A\n");
 		phypwr |= PHYPWR_NORMAL_MASK;
 		break;
 	case TYPE_EXYNOS4X12:
-		phypwr |= PHYPWR_NORMAL_MASK_PHY0;
-		writel(phypwr, regs + SAMSUNG_PHYPWR);
-
-		phypwr = readl(regs + SAMSUNG_PHYPWR);
-		phypwr |= (PHYPWR_NORMAL_MASK_HSIC0 |
-				PHYPWR_NORMAL_MASK_HSIC1 |
-				PHYPWR_NORMAL_MASK_PHY1);
-		break;
 	case TYPE_EXYNOS4210:
 		phypwr |= PHYPWR_NORMAL_MASK_PHY0;
-		break;
 	default:
 		break;
 	}
 
 	/* Disable analog and otg block power */
 	writel(phypwr, regs + SAMSUNG_PHYPWR);
+	if (sphy->drv_data->cpu_type == TYPE_EXYNOS4X12) {
+		phypwr = readl(regs + SAMSUNG_PHYPWR);
+		phypwr |= (PHYPWR_NORMAL_MASK_HSIC0 |
+				PHYPWR_NORMAL_MASK_HSIC1 |
+				PHYPWR_NORMAL_MASK_PHY1);
+		writel(phypwr, regs + SAMSUNG_PHYPWR);
+	}
 }
 
 /*
@@ -300,9 +304,10 @@ static int samsung_usb2phy_init(struct usb_phy *phy)
 	struct usb_bus *host = NULL;
 	unsigned long flags;
 	int ret = 0;
+	void __iomem *regs;
 
 	sphy = phy_to_sphy(phy);
-
+	regs = sphy->regs;
 	host = phy->otg->host;
 
 printk("phy init A\n");
@@ -327,6 +332,24 @@ printk("phy init B: device\n");
 		samsung_usbphy_set_type(&sphy->phy, USB_PHY_TYPE_DEVICE);
 	}
 
+	atomic_inc(&sphy->phy_usage);
+
+	if (exynos4_phyhost_is_on(regs)) {
+		dev_info(sphy->dev, "Already power on PHY\n");
+		goto out;
+	}
+
+	/*
+	 *  set XuhostOVERCUR to in-active by controlling ET6PUD[15:14]
+	 *  0x0 : pull-up/down disabled
+	 *  0x1 : pull-down enabled
+	 *  0x2 : reserved
+	 *  0x3 : pull-up enabled
+	 */
+	if (sphy->etcreg)
+		writel((readl(sphy->etcreg) & ~(0x3 << 14)) | (0x3 << 14),
+			sphy->etcreg);
+
 	/* Disable phy isolation */
 	if (sphy->plat && sphy->plat->pmu_isolation) {
 		sphy->plat->pmu_isolation(false);
@@ -342,6 +365,7 @@ printk("phy init C: drv isolation disabled\n");
 	/* Initialize usb phy registers */
 	sphy->drv_data->phy_enable(sphy);
 
+out:
 	spin_unlock_irqrestore(&sphy->lock, flags);
 
 	/* Disable the phy clock */
@@ -381,6 +405,11 @@ printk("samsung_usb2phy_shutdown: A\n");
 		samsung_usbphy_set_type(&sphy->phy, USB_PHY_TYPE_DEVICE);
 	}
 
+	if (atomic_dec_return(&sphy->phy_usage) > 0) {
+		dev_info(sphy->dev, "still being used\n");
+		goto out;
+	}
+
 	/* De-initialize usb phy registers */
 	sphy->drv_data->phy_disable(sphy);
 
@@ -390,6 +419,7 @@ printk("samsung_usb2phy_shutdown: A\n");
 	else if (sphy->drv_data->set_isolation)
 		sphy->drv_data->set_isolation(sphy, true);
 
+out:
 	spin_unlock_irqrestore(&sphy->lock, flags);
 
 	clk_disable_unprepare(sphy->clk);
@@ -481,6 +511,8 @@ static int samsung_usb2phy_remove(struct platform_device *pdev)
 		iounmap(sphy->pmuregs);
 	if (sphy->sysreg)
 		iounmap(sphy->sysreg);
+	if (sphy->etcreg)
+		iounmap(sphy->etcreg);
 
 	return 0;
 }

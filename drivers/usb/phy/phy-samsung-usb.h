@@ -56,6 +56,7 @@
 #define PHYPWR_NORMAL_MASK_HSIC1		(0x7 << 12)
 #define PHYPWR_NORMAL_MASK_HSIC0		(0x7 << 9)
 #define PHYPWR_NORMAL_MASK_PHY1			(0x7 << 6)
+#define PHYPWR_ANALOG_POWERDOWN_PHY1		(0x1 << 7)
 
 #define EXYNOS4X12_RSTCON_HLINK_SWRST_MASK	(0xf << 7)
 #define RSTCON_HOSTPHY_SWRST			(0xf << 3)
@@ -314,6 +315,7 @@ struct samsung_usbphy {
 	void __iomem	*regs;
 	void __iomem	*pmuregs;
 	void __iomem	*sysreg;
+	void __iomem	*etcreg;
 	int		ref_clk_freq;
 	const struct samsung_usbphy_drvdata *drv_data;
 	enum samsung_usb_phy_type phy_type;

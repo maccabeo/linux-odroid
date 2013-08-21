@@ -34,6 +34,7 @@
 int samsung_usbphy_parse_dt(struct samsung_usbphy *sphy)
 {
 	struct device_node *usbphy_sys;
+	struct device_node *usbphy_etc_sys;
 
 	/* Getting node for system controller interface for usb-phy */
 	usbphy_sys = of_get_child_by_name(sphy->dev->of_node, "usbphy-sys");
@@ -58,6 +59,21 @@ int samsung_usbphy_parse_dt(struct samsung_usbphy *sphy)
 	if (sphy->sysreg == NULL)
 		dev_warn(sphy->dev, "Can't get usb-phy sysreg cfg register\n");
 
+	/* Getting node for system controller interface for usb-phy */
+	usbphy_etc_sys = of_get_child_by_name(sphy->dev->of_node, "usbphy-etc-sys");
+	if (!usbphy_etc_sys) {
+		dev_err(sphy->dev, "No sys-etc interface for usb-phy\n");
+		goto out;
+	}
+
+	sphy->etcreg = of_iomap(usbphy_etc_sys, 0);
+
+	if (sphy->etcreg == NULL)
+		dev_warn(sphy->dev, "Can't get usb-phy etcreg cfg register\n");
+
+	of_node_put(usbphy_etc_sys);
+
+out:
 	of_node_put(usbphy_sys);
 
 	return 0;
