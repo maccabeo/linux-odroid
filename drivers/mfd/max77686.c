@@ -82,9 +82,17 @@ static int max77686_i2c_probe(struct i2c_client *i2c,
 	unsigned int data;
 	int ret = 0;
 
+if (pdata) {
+	printk("BEFORE\n");
+	printk("wakeup (%d) gpio irq(%d)\n", pdata->wakeup, pdata->irq_gpio);
+}
 	if (i2c->dev.of_node)
 		pdata = max77686_i2c_parse_dt_pdata(&i2c->dev);
 
+if (pdata) {
+	printk("AFTER\n");
+	printk("wakeup (%d) gpio irq(%d)\n", pdata->wakeup, pdata->irq_gpio);
+}
 	if (!pdata) {
 		dev_err(&i2c->dev, "No platform data found.\n");
 		return -EIO;
