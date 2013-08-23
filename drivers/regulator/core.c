@@ -2337,6 +2337,7 @@ static int _regulator_do_set_voltage(struct regulator_dev *rdev,
         if(rdev->desc->id == MAX77686_BUCK8) {
                 pr_alert("ODROIDU2: Regulator %s\n", rdev->desc->name);
                 rdev->desc->ops->set_voltage_sel(rdev, 0);
+		old_selector = 0;
                 mdelay(120);
         }
 }
