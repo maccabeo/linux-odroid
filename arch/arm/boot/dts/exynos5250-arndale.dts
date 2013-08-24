@@ -460,6 +460,9 @@
 
 	hdmi {
 		hpd-gpio = <&gpx3 7 2>;
+		vdd_osc-supply = <&ldo10_reg>;
+		vdd_pll-supply = <&ldo8_reg>;
+		vdd-supply = <&ldo8_reg>;
 		hdmiphy-confs {
 			nr-confs = <13>;
 			conf0: conf0 {
@@ -580,9 +583,6 @@
 				>;
 			};
 		};
-		vdd_osc-supply = <&ldo10_reg>;
-		vdd_pll-supply = <&ldo8_reg>;
-		vdd-supply = <&ldo8_reg>;
 	};
 
 	regulators {
