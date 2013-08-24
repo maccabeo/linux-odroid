@@ -85,6 +85,7 @@
 #define CLK_SCLK_SPI1_ISP	175 /* Exynos4x12 only */
 #define CLK_SCLK_UART_ISP	176 /* Exynos4x12 only */
 #define CLK_SCLK_FIMG2D		177
+#define CLK_SCLK_HDMIPHY	178
 
 /* gate clocks */
 #define CLK_FIMC0		256
