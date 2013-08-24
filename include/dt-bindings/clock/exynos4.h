@@ -229,6 +229,7 @@
 #define CLK_MOUT_G3D1		393
 #define CLK_MOUT_G3D		394
 #define CLK_ACLK400_MCUISP	395 /* Exynos4x12 only */
+#define CLK_MOUT_HDMI		396
 
 /* div clocks */
 #define CLK_DIV_ISP0		450 /* Exynos4x12 only */
