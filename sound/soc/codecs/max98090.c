@@ -10,6 +10,7 @@
 
 #include <linux/delay.h>
 #include <linux/i2c.h>
+#include <linux/of_device.h>
 #include <linux/module.h>
 #include <linux/pm.h>
 #include <linux/pm_runtime.h>
@@ -2185,6 +2186,12 @@ static void max98090_handle_pdata(struct snd_soc_codec *codec)
 
 }
 
+static const struct of_device_id max98090_of_match[] = {
+        { .compatible = "maxim,max98090", },
+        { }
+};
+MODULE_DEVICE_TABLE(of, max98090_of_match);
+
 static int max98090_probe(struct snd_soc_codec *codec)
 {
 	struct max98090_priv *max98090 = snd_soc_codec_get_drvdata(codec);
@@ -2246,6 +2253,7 @@ static int max98090_probe(struct snd_soc_codec *codec)
 		M98090_JDETEN_MASK | M98090_JDEB_25MS);
 
 	/* Register for interrupts */
+	printk("max98090 irq = %d\n", max98090->irq);
 	dev_dbg(codec->dev, "irq = %d\n", max98090->irq);
 
 	ret = request_threaded_irq(max98090->irq, NULL,
@@ -2320,6 +2328,7 @@ static int max98090_i2c_probe(struct i2c_client *i2c,
 	int ret;
 
 	pr_debug("max98090_i2c_probe\n");
+	printk("max98090_i2c_probe\n");
 
 	max98090 = devm_kzalloc(&i2c->dev, sizeof(struct max98090_priv),
 		GFP_KERNEL);
@@ -2327,14 +2336,17 @@ static int max98090_i2c_probe(struct i2c_client *i2c,
 		return -ENOMEM;
 
 	max98090->devtype = id->driver_data;
+printk("max98090_i2c A_probe i2c irq (%d) platform data (%p)\n", i2c->irq , i2c->dev.platform_data);
 	i2c_set_clientdata(i2c, max98090);
 	max98090->control_data = i2c;
 	max98090->pdata = i2c->dev.platform_data;
 	max98090->irq = i2c->irq;
 
+printk("max98090_i2c B_probe i2c irq (%d) platform data (%p)\n", i2c->irq , i2c->dev.platform_data);
 	max98090->regmap = devm_regmap_init_i2c(i2c, &max98090_regmap);
 	if (IS_ERR(max98090->regmap)) {
 		ret = PTR_ERR(max98090->regmap);
+		printk("max98090_i2c_probe: Failed to allocate regmap: %d\n", ret);
 		dev_err(&i2c->dev, "Failed to allocate regmap: %d\n", ret);
 		goto err_enable;
 	}
@@ -2390,6 +2402,7 @@ static struct i2c_driver max98090_i2c_driver = {
 		.name = "max98090",
 		.owner = THIS_MODULE,
 		.pm = &max98090_pm,
+		.of_match_table = max98090_of_match,
 	},
 	.probe  = max98090_i2c_probe,
 	.remove = max98090_i2c_remove,
