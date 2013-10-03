@@ -13,6 +13,8 @@
 #include <linux/platform_device.h>
 #include <linux/clk.h>
 #include <linux/io.h>
+#include <linux/of.h>
+#include <linux/of_device.h>
 #include <linux/module.h>
 
 #include <sound/soc.h>
@@ -26,7 +28,9 @@
 #include "s3c-i2s-v2.h"
 #include "../codecs/max98090.h"
 
+#if 0
 static struct platform_device *odroid_snd_device;
+#endif
 
 static int set_epll_rate(unsigned long rate)
 {
@@ -167,6 +171,7 @@ static int max98090_init(struct snd_soc_pcm_runtime *rtd)
 	return 0;
 }
 
+#if 0
 static struct snd_soc_dai_driver voice_dai = {
 	.name = "samsung-i2s.0",
 	.id = 0,
@@ -183,13 +188,14 @@ static struct snd_soc_dai_driver voice_dai = {
 		.formats = SNDRV_PCM_FMTBIT_S16_LE,
 	},
 };
+#endif
 
 static struct snd_soc_dai_link odroid_dai[] = {
 	{	/* Primary DAI i/f */
 		.name = "MAX98090 AIF1",
 		.stream_name = "Playback",
 		.cpu_dai_name = "samsung-i2s.0",
-		.codec_dai_name = "max98090-aif1",
+		.codec_dai_name = "HiFi",
 		.platform_name = "samsung-i2s.0",
 		.codec_name = "max98090.1-0010",
 		.init = max98090_init,
@@ -198,9 +204,9 @@ static struct snd_soc_dai_link odroid_dai[] = {
 	{	/* Sec_Fifo DAI i/f */
 		.name = "MAX98090 AIF2",
 		.stream_name = "Capture",
-		.cpu_dai_name = "samsung-i2s.0",
-		.codec_dai_name = "max98090-aif1",
-		.platform_name = "samsung-i2s.0",
+		.cpu_dai_name = "samsung-i2s-sec",
+		.codec_dai_name = "HiFi",
+		.platform_name = "samsung-i2s-sec",
 		.codec_name = "max98090.1-0010",
 		.init = max98090_init,
 		.ops = &odroid_ops,
@@ -214,12 +220,47 @@ static struct snd_soc_card snd_soc_hkdk_max98090 = {
 	.num_links = ARRAY_SIZE(odroid_dai),
 };
 
+#ifdef CONFIG_OF
+static const struct of_device_id samsung_hkdk_max98090_of_match[] = {
+        { .compatible = "hardkernel,hkdk-max98090", },
+        {},
+};
+MODULE_DEVICE_TABLE(of, samsung_hkdk_max98090_of_match);
+#endif /* CONFIG_OF */
+
 static int hkdk_max98090_driver_probe(struct platform_device *pdev)
 {
-	struct snd_soc_card *card = &snd_soc_hkdk_max98090;
 	int ret;
+	struct device_node *np = pdev->dev.of_node;
+	struct snd_soc_card *card = &snd_soc_hkdk_max98090;
 
 	card->dev = &pdev->dev;
+printk("hkdk_max98090_driver_probe: A\n");
+	if (np) {
+printk("hkdk_max98090_driver_probe: B\n");
+		card->dai_link[0].cpu_dai_name = NULL;
+		card->dai_link[0].cpu_of_node = of_parse_phandle(np,
+				"samsung,i2s-controller", 0);
+		if (!card->dai_link[0].cpu_of_node) {
+			dev_err(&pdev->dev,
+			   "Property 'samsung,i2s-controller' missing or invalid\n");
+			ret = -EINVAL;
+		}
+
+		card->dai_link[0].platform_name = NULL;
+		card->dai_link[0].platform_of_node = card->dai_link[0].cpu_of_node;
+
+		card->dai_link[0].codec_name = NULL;
+		card->dai_link[0].codec_of_node = of_parse_phandle(np,
+				"samsung,audio-codec", 0);
+		if (!card->dai_link[0].codec_of_node) {
+			dev_err(&pdev->dev,
+			   "Property 'samsung,audio-codec' missing or invalid\n");
+			ret = -EINVAL;
+		}
+        }
+printk("hkdk_max98090_driver_probe: C\n");
+
 	platform_set_drvdata(pdev, card);
 
 	ret = snd_soc_register_card(card);
@@ -242,9 +283,10 @@ static int hkdk_max98090_driver_remove(struct platform_device *pdev)
 
 static struct platform_driver hkdk_max98090_driver = {
 	.driver		= {
-		.name	= "hkdk-snd-max89090",
+		.name	= "hkdk-snd-max98090",
 		.owner	= THIS_MODULE,
 		.pm	= &snd_soc_pm_ops,
+		.of_match_table = of_match_ptr(samsung_hkdk_max98090_of_match),
 	},
 	.probe		= hkdk_max98090_driver_probe,
 	.remove		= hkdk_max98090_driver_remove,
