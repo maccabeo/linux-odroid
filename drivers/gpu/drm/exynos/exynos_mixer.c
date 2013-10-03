@@ -161,6 +161,7 @@ static inline u32 mixer_reg_read(struct mixer_resources *res, u32 reg_id)
 static inline void mixer_reg_write(struct mixer_resources *res, u32 reg_id,
 				 u32 val)
 {
+	DRM_DEBUG_KMS ("mixer regs (%p) reg_id (%d) val (%x)\n", res->mixer_regs, reg_id, val);
 	writel(val, res->mixer_regs + reg_id);
 }
 
@@ -181,10 +182,18 @@ do { \
 		(u32)readl(ctx->mixer_res.mixer_regs + reg_id)); \
 } while (0)
 
+
+	DRM_DEBUG_KMS("ctx (%p) mixer_res (%p) mixer_regs (%p) \n", ctx, &ctx->mixer_res, ctx->mixer_res.mixer_regs);
+
+DRM_DEBUG_KMS("START\n");
 	DUMPREG(MXR_STATUS);
+DRM_DEBUG_KMS("STATUS\n");
 	DUMPREG(MXR_CFG);
+DRM_DEBUG_KMS("CFG\n");
 	DUMPREG(MXR_INT_EN);
+DRM_DEBUG_KMS("INT_EN\n");
 	DUMPREG(MXR_INT_STATUS);
+DRM_DEBUG_KMS("INT_STATUS\n");
 
 	DUMPREG(MXR_LAYER_CFG);
 	DUMPREG(MXR_VIDEO_CFG);
@@ -202,6 +211,7 @@ do { \
 	DUMPREG(MXR_GRAPHIC1_WH);
 	DUMPREG(MXR_GRAPHIC1_SXY);
 	DUMPREG(MXR_GRAPHIC1_DXY);
+DRM_DEBUG_KMS("MXR_GRAPHIC1_DXY\n");
 #undef DUMPREG
 }
 
@@ -901,45 +911,62 @@ static void mixer_poweron(struct mixer_context *ctx)
 {
 	struct mixer_resources *res = &ctx->mixer_res;
 
+DRM_DEBUG_KMS("A\n");
 	mutex_lock(&ctx->mixer_mutex);
 	if (ctx->powered) {
 		mutex_unlock(&ctx->mixer_mutex);
 		return;
 	}
+DRM_DEBUG_KMS("B\n");
 	ctx->powered = true;
 	mutex_unlock(&ctx->mixer_mutex);
+DRM_DEBUG_KMS("C\n");
 
 	clk_prepare_enable(res->mixer);
+DRM_DEBUG_KMS("D\n");
 	if (ctx->vp_enabled) {
+DRM_DEBUG_KMS("D.1\n");
 		clk_prepare_enable(res->vp);
 		clk_prepare_enable(res->sclk_mixer);
 	}
+DRM_DEBUG_KMS("E int_e (%x) (%d)\n", ctx->int_en, ctx->int_en);
 
+DRM_DEBUG_KMS("E.1 int_e (%x) (%d)\n", ctx->int_en, ctx->int_en);
 	mixer_reg_write(res, MXR_INT_EN, ctx->int_en);
+DRM_DEBUG_KMS("F\n");
 	mixer_win_reset(ctx);
+DRM_DEBUG_KMS("G\n");
 
 	mixer_window_resume(ctx);
+DRM_DEBUG_KMS("H\n");
 }
 
 static void mixer_poweroff(struct mixer_context *ctx)
 {
 	struct mixer_resources *res = &ctx->mixer_res;
 
+DRM_DEBUG_KMS("A\n");
 	mutex_lock(&ctx->mixer_mutex);
 	if (!ctx->powered)
 		goto out;
 	mutex_unlock(&ctx->mixer_mutex);
 
+DRM_DEBUG_KMS("B\n");
 	mixer_window_suspend(ctx);
 
+DRM_DEBUG_KMS("C\n");
 	ctx->int_en = mixer_reg_read(res, MXR_INT_EN);
+DRM_DEBUG_KMS("D\n");
 
 	clk_disable_unprepare(res->mixer);
+DRM_DEBUG_KMS("E\n");
 	if (ctx->vp_enabled) {
+DRM_DEBUG_KMS("E.1\n");
 		clk_disable_unprepare(res->vp);
 		clk_disable_unprepare(res->sclk_mixer);
 	}
 
+DRM_DEBUG_KMS("F\n");
 	mutex_lock(&ctx->mixer_mutex);
 	ctx->powered = false;
 
@@ -951,14 +978,19 @@ static void mixer_dpms(void *ctx, int mode)
 {
 	struct mixer_context *mixer_ctx = ctx;
 
+	DRM_DEBUG_KMS("A\n");
 	switch (mode) {
 	case DRM_MODE_DPMS_ON:
-		if (pm_runtime_suspended(mixer_ctx->dev))
+	DRM_DEBUG_KMS("A1\n");
+		if (pm_runtime_suspended(mixer_ctx->dev)) {
+	DRM_DEBUG_KMS("A1.1\n");
 			pm_runtime_get_sync(mixer_ctx->dev);
+		}
 		break;
 	case DRM_MODE_DPMS_STANDBY:
 	case DRM_MODE_DPMS_SUSPEND:
 	case DRM_MODE_DPMS_OFF:
+	DRM_DEBUG_KMS("A2\n");
 		if (!pm_runtime_suspended(mixer_ctx->dev))
 			pm_runtime_put_sync(mixer_ctx->dev);
 		break;
@@ -966,6 +998,7 @@ static void mixer_dpms(void *ctx, int mode)
 		DRM_DEBUG_KMS("unknown dpms mode: %d\n", mode);
 		break;
 	}
+	DRM_DEBUG_KMS("B\n");
 }
 
 static struct exynos_mixer_ops mixer_ops = {
@@ -992,10 +1025,12 @@ static irqreturn_t mixer_irq_handler(int irq, void *arg)
 	struct mixer_resources *res = &ctx->mixer_res;
 	u32 val, base, shadow;
 
+	DRM_DEBUG_KMS("START (%d)\n", irq);
 	spin_lock(&res->reg_slock);
 
 	/* read interrupt status for handling and clearing flags for VSYNC */
 	val = mixer_reg_read(res, MXR_INT_STATUS);
+	DRM_DEBUG_KMS("A val (%d)\n", val);
 
 	/* handling VSYNC */
 	if (val & MXR_INT_STATUS_VSYNC) {
@@ -1022,6 +1057,7 @@ static irqreturn_t mixer_irq_handler(int irq, void *arg)
 			DRM_WAKEUP(&ctx->wait_vsync_queue);
 		}
 	}
+	DRM_DEBUG_KMS("B val (%d)\n", val);
 
 out:
 	/* clear interrupts */
@@ -1033,6 +1069,7 @@ out:
 	mixer_reg_write(res, MXR_INT_STATUS, val);
 
 	spin_unlock(&res->reg_slock);
+	DRM_DEBUG_KMS("END (%d)\n", irq);
 
 	return IRQ_HANDLED;
 }
@@ -1065,19 +1102,20 @@ static int mixer_resources_init(struct exynos_drm_hdmi_context *ctx,
 		return -ENXIO;
 	}
 
-	mixer_res->mixer_regs = devm_ioremap(dev, res->start,
-							resource_size(res));
+printk("MXR mem (%pr)\n", res);
+	mixer_res->mixer_regs = devm_ioremap_resource(dev, res);
 	if (mixer_res->mixer_regs == NULL) {
 		dev_err(dev, "register mapping failed.\n");
 		return -ENXIO;
 	}
-
+printk("MXR regs (%p)\n", mixer_res->mixer_regs);
 	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
 	if (res == NULL) {
 		dev_err(dev, "get interrupt resource failed.\n");
 		return -ENXIO;
 	}
 
+printk("MXR irq (%pr)\n", res);
 	ret = devm_request_irq(dev, res->start, mixer_irq_handler,
 							0, "drm_mixer", ctx);
 	if (ret) {
@@ -1122,12 +1160,13 @@ static int vp_resources_init(struct exynos_drm_hdmi_context *ctx,
 		return -ENXIO;
 	}
 
-	mixer_res->vp_regs = devm_ioremap(dev, res->start,
-							resource_size(res));
+printk("VP mem (%pr)\n", res);
+	mixer_res->vp_regs = devm_ioremap_resource(dev, res);
 	if (mixer_res->vp_regs == NULL) {
 		dev_err(dev, "register mapping failed.\n");
 		return -ENXIO;
 	}
+printk("VP regs (%p)\n", mixer_res->vp_regs);
 
 	return 0;
 }
@@ -1279,9 +1318,8 @@ static int mixer_resume(struct device *dev)
 	struct exynos_drm_hdmi_context *drm_hdmi_ctx = get_mixer_context(dev);
 	struct mixer_context *ctx = drm_hdmi_ctx->ctx;
 
-	if (pm_runtime_suspended(dev)) {
-		/* dpms callback should resume the mixer. */
-		DRM_DEBUG_KMS("Already suspended\n");
+	if (!pm_runtime_suspended(dev)) {
+		DRM_DEBUG_KMS("Already resumed\n");
 		return 0;
 	}
 

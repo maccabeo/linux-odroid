@@ -516,11 +516,13 @@ struct pwm_device *of_pwm_get(struct device_node *np, const char *con_id)
 	int index = 0;
 	int err;
 
+printk("of_pwm_get : A\n");
 	if (con_id) {
 		index = of_property_match_string(np, "pwm-names", con_id);
 		if (index < 0)
 			return ERR_PTR(index);
 	}
+printk("of_pwm_get : B\n");
 
 	err = of_parse_phandle_with_args(np, "pwms", "#pwm-cells", index,
 					 &args);
@@ -528,6 +530,7 @@ struct pwm_device *of_pwm_get(struct device_node *np, const char *con_id)
 		pr_debug("%s(): can't parse \"pwms\" property\n", __func__);
 		return ERR_PTR(err);
 	}
+printk("of_pwm_get : C\n");
 
 	pc = of_node_to_pwmchip(args.np);
 	if (IS_ERR(pc)) {
@@ -535,6 +538,7 @@ struct pwm_device *of_pwm_get(struct device_node *np, const char *con_id)
 		pwm = ERR_CAST(pc);
 		goto put;
 	}
+printk("of_pwm_get : D of (%d) args (%d)\n", pc->of_pwm_n_cells, args.args_count);
 
 	if (args.args_count != pc->of_pwm_n_cells) {
 		pr_debug("%s: wrong #pwm-cells for %s\n", np->full_name,
@@ -542,10 +546,12 @@ struct pwm_device *of_pwm_get(struct device_node *np, const char *con_id)
 		pwm = ERR_PTR(-EINVAL);
 		goto put;
 	}
+printk("of_pwm_get : E\n");
 
 	pwm = pc->of_xlate(pc, &args);
 	if (IS_ERR(pwm))
 		goto put;
+printk("of_pwm_get : F\n");
 
 	/*
 	 * If a consumer name was not given, try to look it up from the
@@ -558,12 +564,14 @@ struct pwm_device *of_pwm_get(struct device_node *np, const char *con_id)
 		if (err < 0)
 			con_id = np->name;
 	}
+printk("of_pwm_get : G\n");
 
 	pwm->label = con_id;
 
 put:
 	of_node_put(args.np);
 
+printk("of_pwm_get : H\n");
 	return pwm;
 }
 EXPORT_SYMBOL_GPL(of_pwm_get);
@@ -607,9 +615,13 @@ struct pwm_device *pwm_get(struct device *dev, const char *con_id)
 	struct pwm_lookup *p;
 	unsigned int match;
 
+printk("pwm_get : A (%p)\n", dev);
 	/* look up via DT first */
-	if (IS_ENABLED(CONFIG_OF) && dev && dev->of_node)
+	if (IS_ENABLED(CONFIG_OF) && dev && dev->of_node) {
 		return of_pwm_get(dev->of_node, con_id);
+printk("pwm_get : A.1 of _node done\n");
+	}
+printk("pwm_get : B\n");
 
 	/*
 	 * We look up the provider in the static table typically provided by
