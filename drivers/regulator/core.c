@@ -1021,6 +1021,18 @@ static int set_machine_constraints(struct regulator_dev *rdev,
 			goto out;
 		}
 	}
+#if 0
+	else if (ops->disable) {
+		ret = ops->disable(rdev);
+
+		if (ret < 0)
+			rdev_warn(rdev, "failed to disable\n");
+		else
+			rdev_warn(rdev, "disabled regulator\n");
+
+		ret = 0;
+	}
+#endif
 
 	if ((rdev->constraints->ramp_delay || rdev->constraints->ramp_disable)
 		&& ops->set_ramp_delay) {
@@ -2321,6 +2333,15 @@ static int _regulator_do_set_voltage(struct regulator_dev *rdev,
 				ret = regulator_map_voltage_iterate(rdev,
 								min_uV, max_uV);
 		}
+{
+#include <linux/kernel.h>
+#include <linux/mfd/max77686.h>
+        if(rdev->desc->id == MAX77686_BUCK8) {
+                pr_alert("ODROIDU2: Regulator %s ret(%d)\n", rdev->desc->name, ret);
+                rdev->desc->ops->set_voltage_sel(rdev, 0);
+                mdelay(120);
+        }
+}
 
 		if (ret >= 0) {
 			best_val = rdev->desc->ops->list_voltage(rdev, ret);
