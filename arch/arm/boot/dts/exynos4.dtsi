@@ -65,10 +65,12 @@
 		reg = <0x10023C60 0x20>;
 	};
 
+/*
 	pd_lcd0: lcd0-power-domain@10023C80 {
 		compatible = "samsung,exynos4210-pd";
 		reg = <0x10023C80 0x20>;
 	};
+*/
 
 	pd_tv: tv-power-domain@10023C20 {
 		compatible = "samsung,exynos4210-pd";
@@ -513,7 +515,7 @@
 		interrupts = <11 0>, <11 1>, <11 2>;
 		clocks = <&clock 140>, <&clock 283>;
 		clock-names = "sclk_fimd", "fimd";
-		samsung,power-domain = <&pd_lcd0>;
+		/* samsung,power-domain = <&pd_lcd0>; */
 		status = "disabled";
 	};
 };
