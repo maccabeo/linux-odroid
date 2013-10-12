@@ -111,15 +111,15 @@
 	mali@13000000 {
 		compatible = "arm,mali400-mp4";
 
-		shared-memory-size = 0x10000000;
+		shared-memory-size = <0x10000000>;
 
 		/* mali dvfs */
-		utilization-interval = 1000;
+		utilization-interval = <1000>;
 
 		samsung,power-domain = <&pd_g3d>;
 		status = "okay";
 
-		clocks = <3>, <7>, <11>, <393>, <17>, <392>, <172>,;
+		clocks = <3>, <7>, <11>, <393>, <17>, <392>, <172>;
 		clock-names = "ext_xtal", "fout_vpll", "sclk_vpll", "mout_g3d1",
 				"mout_mpll", "mout_g3d0", "sclk_g3d";
 
