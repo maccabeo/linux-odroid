@@ -97,6 +97,8 @@ static char mali_dev_name[] = "mali"; /* should be const, but the functions we c
 /* This driver only supports one Mali device, and this variable stores this single platform device */
 struct platform_device *mali_platform_device = NULL;
 
+struct _mali_osk_device_data *mali_platform_data = NULL;
+
 /* This driver only supports one Mali device, and this variable stores the exposed misc device (/dev/mali) */
 static struct miscdevice mali_miscdevice = { 0, };
 
@@ -117,6 +119,8 @@ static int mali_remove(struct platform_device *pdev);
 
 static int mali_driver_suspend_scheduler(struct device *dev);
 static int mali_driver_resume_scheduler(struct device *dev);
+
+static struct _mali_osk_device_data* mali_parse_dt(struct platform_device *pdev);
 
 #ifdef CONFIG_PM_RUNTIME
 static int mali_driver_runtime_suspend(struct device *dev);
@@ -156,6 +160,13 @@ static const struct dev_pm_ops mali_dev_pm_ops =
 };
 #endif
 
+#ifdef CONFIG_OF
+static const struct of_device_id arm_mali_match[] = {
+	{ .compatible = "arm,mali400-mp4" },
+	{},
+};
+#endif
+
 /* The Mali device driver struct */
 static struct platform_driver mali_platform_driver =
 {
@@ -172,6 +183,7 @@ static struct platform_driver mali_platform_driver =
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
 		.pm = &mali_dev_pm_ops,
 #endif
+		.of_match_table = of_match_ptr(arm_mali_match),
 	},
 };
 
@@ -266,6 +278,7 @@ void mali_module_exit(void)
 
 static int mali_probe(struct platform_device *pdev)
 {
+	struct device_node *np;
 	int err;
 
 	MALI_DEBUG_PRINT(2, ("mali_probe(): Called for platform device %s\n", pdev->name));
@@ -276,6 +289,11 @@ static int mali_probe(struct platform_device *pdev)
 		MALI_PRINT_ERROR(("mali_probe(): The Mali driver is already connected with a Mali device."));
 		return -EEXIST;
 	}
+
+	np = pdev->dev.of_node;
+
+	if (np)
+		mali_parse_dt(pdev);
 
 	mali_platform_device = pdev;
 
@@ -416,6 +434,7 @@ static int mali_mmap(struct file * filp, struct vm_area_struct * vma)
 		MALI_DEBUG_PRINT(3,("Allocate - GP Cached - Size: %d kb\n", args.size/1024));
 	}
 	/* Setting it equal to VM_SHARED and not Private, which would have made the later io_remap fail for MALI_CACHE_GP_READ_ALLOCATE */
+static int mali_probe(struct platform_device *pdev);
 	vma->vm_flags = 0x000000fb;
 
 	/* Call the common mmap handler */
@@ -704,6 +723,41 @@ static int mali_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, 
 	return err;
 }
 
+#ifdef CONFIG_OF
+static struct _mali_osk_device_data *mali_parse_dt (struct platform_device *pdev)
+{
+	struct device_node *np = pdev->dev.of_node;
+	const char *tmp_str;
+	u32 tmp_interval, tmp_size;
+
+	if (NULL != mali_platform_data)
+		return mali_platform_data;
+
+	mali_platform_data = devm_kzalloc(&pdev->dev, sizeof(*ptrips), GFP_KERNEL);
+	if (!data)
+		return NULL;
+
+	if (of_property_read_u64(np, "utilization-interval", &tmp_interval))
+		goto error_parse_dt;
+	if (of_property_read_u64(np, "shared-memory-size", &tmp_size))
+		goto error_parse_dt;
+
+	mali_platform_data.shared_mem_size = tmp_size;
+	mali_platform_data.utilization_interval = tmp_interval;
+	mali_platform_data.utilization_callback = mali_gpu_utilization_handler;
+
+        return mali_platform_data;
+
+err_parse_dt:
+	dev_err(&pdev->dev, "Parsing device tree data error.\n");
+	return NULL;
+}
+#else
+static struct _mali_osk_device_data mali_parse_dt (struct platform_device *pdev)
+{
+	return NULL;
+}
+#endif
 
 module_init(mali_module_init);
 module_exit(mali_module_exit);

@@ -91,7 +91,10 @@ _mali_osk_errcode_t _mali_osk_device_data_get(struct _mali_osk_device_data *data
 	{
 		struct mali_gpu_device_data* os_data = NULL;
 
-		os_data = (struct mali_gpu_device_data*)mali_platform_device->dev.platform_data;
+		if (NULL != mali_platform_data)
+			os_data = (struct mali_gpu_device_data*)mali_platform_data;
+		else
+			os_data = (struct mali_gpu_device_data*)mali_platform_device->dev.platform_data;
 		if (NULL != os_data)
 		{
 			/* Copy data from OS dependant struct to Mali neutral struct (identical!) */
