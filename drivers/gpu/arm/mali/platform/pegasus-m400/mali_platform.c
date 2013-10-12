@@ -183,6 +183,7 @@ mali_bool mali_clk_get(mali_bool bis_vpll)
 			}
 		}
 
+#if 0
 		if (vpll_src_clock == NULL)
 		{
 			vpll_src_clock = clk_get(NULL,VPLLSRCCLK_NAME);
@@ -191,7 +192,7 @@ mali_bool mali_clk_get(mali_bool bis_vpll)
 				return MALI_FALSE;
 			}
 		}
-
+#endif
 		if (fout_vpll_clock == NULL)
 		{
 			fout_vpll_clock = clk_get(NULL,FOUTVPLLCLK_NAME);
