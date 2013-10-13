@@ -75,29 +75,10 @@ static _mali_osk_errcode_t mali_parse_product_info(void)
 	 * Look at the version register for the first PP core in order to determine the GPU HW revision.
 	 */
 
-	u32 first_pp_offset;
 	_mali_osk_resource_t first_pp_resource;
 
-	global_gpu_base_address = _mali_osk_resource_base_address();
-	if (0 == global_gpu_base_address)
-	{
-		return _MALI_OSK_ERR_ITEM_NOT_FOUND;
-	}
-
-	/* Find out where the first PP core is located */
-	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find(global_gpu_base_address + 0x8000, NULL))
-	{
-		/* Mali-300/400/450 */
-		first_pp_offset = 0x8000;
-	}
-	else
-	{
-		/* Mali-200 */
-		first_pp_offset = 0x0000;
-	}
-
 	/* Find the first PP core resource (again) */
-	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find(global_gpu_base_address + first_pp_offset, &first_pp_resource))
+	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_0, &first_pp_resource))
 	{
 		/* Create a dummy PP object for this core so that we can read the version register */
 		struct mali_group *group = mali_group_create(NULL, NULL, NULL);
@@ -161,48 +142,48 @@ void mali_resource_count(u32 *pp_count, u32 *l2_count)
 	*pp_count = 0;
 	*l2_count = 0;
 
-	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find(global_gpu_base_address + 0x08000, NULL))
+	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_0, NULL))
 	{
 		++(*pp_count);
 	}
-	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find(global_gpu_base_address + 0x0A000, NULL))
+	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_1, NULL))
 	{
 		++(*pp_count);
 	}
-	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find(global_gpu_base_address + 0x0C000, NULL))
+	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_2, NULL))
 	{
 		++(*pp_count);
 	}
-	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find(global_gpu_base_address + 0x0E000, NULL))
+	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_3, NULL))
 	{
 		++(*pp_count);
 	}
-	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find(global_gpu_base_address + 0x28000, NULL))
+	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_4, NULL))
 	{
 		++(*pp_count);
 	}
-	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find(global_gpu_base_address + 0x2A000, NULL))
+	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_5, NULL))
 	{
 		++(*pp_count);
 	}
-	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find(global_gpu_base_address + 0x2C000, NULL))
+	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_6, NULL))
 	{
 		++(*pp_count);
 	}
-	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find(global_gpu_base_address + 0x2E000, NULL))
+	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_7, NULL))
 	{
 		++(*pp_count);
 	}
 
-	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find(global_gpu_base_address + 0x1000, NULL))
+	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_L2_GP, NULL))
 	{
 		++(*l2_count);
 	}
-	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find(global_gpu_base_address + 0x10000, NULL))
+	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_L2_PP_GRP0, NULL))
 	{
 		++(*l2_count);
 	}
-	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find(global_gpu_base_address + 0x11000, NULL))
+	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_L2_PP_GRP1, NULL))
 	{
 		++(*l2_count);
 	}
@@ -249,7 +230,7 @@ static _mali_osk_errcode_t mali_parse_config_l2_cache(void)
 	else if (_MALI_PRODUCT_ID_MALI300 == global_product_id || _MALI_PRODUCT_ID_MALI400 == global_product_id)
 	{
 		_mali_osk_resource_t l2_resource;
-		if (_MALI_OSK_ERR_OK != _mali_osk_resource_find(global_gpu_base_address + 0x1000, &l2_resource))
+		if (_MALI_OSK_ERR_OK != _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_L2, &l2_resource))
 		{
 			MALI_DEBUG_PRINT(3, ("Did not find required Mali L2 cache in config file\n"));
 			return _MALI_OSK_ERR_FAULT;
@@ -270,7 +251,7 @@ static _mali_osk_errcode_t mali_parse_config_l2_cache(void)
 		_mali_osk_resource_t l2_pp_grp1_resource;
 
 		/* Make cluster for GP's L2 */
-		if (_MALI_OSK_ERR_OK == _mali_osk_resource_find(global_gpu_base_address + 0x10000, &l2_gp_resource))
+		if (_MALI_OSK_ERR_OK == _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_L2_GP, &l2_gp_resource))
 		{
 			_mali_osk_errcode_t ret;
 			MALI_DEBUG_PRINT(3, ("Creating Mali-450 L2 cache core for GP\n"));
@@ -287,7 +268,7 @@ static _mali_osk_errcode_t mali_parse_config_l2_cache(void)
 		}
 
 		/* Make cluster for first PP core group */
-		if (_MALI_OSK_ERR_OK == _mali_osk_resource_find(global_gpu_base_address + 0x1000, &l2_pp_grp0_resource))
+		if (_MALI_OSK_ERR_OK == _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_L2_PP_GRP0, &l2_pp_grp0_resource))
 		{
 			_mali_osk_errcode_t ret;
 			MALI_DEBUG_PRINT(3, ("Creating Mali-450 L2 cache core for PP group 0\n"));
@@ -304,7 +285,7 @@ static _mali_osk_errcode_t mali_parse_config_l2_cache(void)
 		}
 
 		/* Second PP core group is optional, don't fail if we don't find it */
-		if (_MALI_OSK_ERR_OK == _mali_osk_resource_find(global_gpu_base_address + 0x11000, &l2_pp_grp1_resource))
+		if (_MALI_OSK_ERR_OK == _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_L2_PP_GRP1, &l2_pp_grp1_resource))
 		{
 			_mali_osk_errcode_t ret;
 			MALI_DEBUG_PRINT(3, ("Creating Mali-450 L2 cache core for PP group 1\n"));
@@ -453,9 +434,9 @@ static _mali_osk_errcode_t mali_parse_config_groups(void)
 
 		MALI_DEBUG_ASSERT(1 == mali_l2_cache_core_get_glob_num_l2_cores());
 
-		if (_MALI_OSK_ERR_OK != _mali_osk_resource_find(global_gpu_base_address + 0x02000, &resource_gp) ||
-		    _MALI_OSK_ERR_OK != _mali_osk_resource_find(global_gpu_base_address + 0x00000, &resource_pp) ||
-		    _MALI_OSK_ERR_OK != _mali_osk_resource_find(global_gpu_base_address + 0x03000, &resource_mmu))
+		if (_MALI_OSK_ERR_OK != _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PMU, &resource_gp) ||
+		    _MALI_OSK_ERR_OK != _mali_osk_resource_find_by_id (MALI_RESOURCE_INDEX_GP, resource_pp) ||
+		    _MALI_OSK_ERR_OK != _mali_osk_resource_find_by_id (MALI_RESOURCE_INDEX_GP_MMU, &resource_mmu))
 		{
 			/* Missing mandatory core(s) */
 			return _MALI_OSK_ERR_FAULT;
@@ -505,32 +486,33 @@ static _mali_osk_errcode_t mali_parse_config_groups(void)
 			cluster_id_pp_grp1 = 2;
 		}
 
-		resource_gp_found = _mali_osk_resource_find(global_gpu_base_address + 0x00000, &resource_gp);
-		resource_gp_mmu_found = _mali_osk_resource_find(global_gpu_base_address + 0x03000, &resource_gp_mmu);
-		resource_pp_found[0] = _mali_osk_resource_find(global_gpu_base_address + 0x08000, &(resource_pp[0]));
-		resource_pp_found[1] = _mali_osk_resource_find(global_gpu_base_address + 0x0A000, &(resource_pp[1]));
-		resource_pp_found[2] = _mali_osk_resource_find(global_gpu_base_address + 0x0C000, &(resource_pp[2]));
-		resource_pp_found[3] = _mali_osk_resource_find(global_gpu_base_address + 0x0E000, &(resource_pp[3]));
-		resource_pp_found[4] = _mali_osk_resource_find(global_gpu_base_address + 0x28000, &(resource_pp[4]));
-		resource_pp_found[5] = _mali_osk_resource_find(global_gpu_base_address + 0x2A000, &(resource_pp[5]));
-		resource_pp_found[6] = _mali_osk_resource_find(global_gpu_base_address + 0x2C000, &(resource_pp[6]));
-		resource_pp_found[7] = _mali_osk_resource_find(global_gpu_base_address + 0x2E000, &(resource_pp[7]));
-		resource_pp_mmu_found[0] = _mali_osk_resource_find(global_gpu_base_address + 0x04000, &(resource_pp_mmu[0]));
-		resource_pp_mmu_found[1] = _mali_osk_resource_find(global_gpu_base_address + 0x05000, &(resource_pp_mmu[1]));
-		resource_pp_mmu_found[2] = _mali_osk_resource_find(global_gpu_base_address + 0x06000, &(resource_pp_mmu[2]));
-		resource_pp_mmu_found[3] = _mali_osk_resource_find(global_gpu_base_address + 0x07000, &(resource_pp_mmu[3]));
-		resource_pp_mmu_found[4] = _mali_osk_resource_find(global_gpu_base_address + 0x1C000, &(resource_pp_mmu[4]));
-		resource_pp_mmu_found[5] = _mali_osk_resource_find(global_gpu_base_address + 0x1D000, &(resource_pp_mmu[5]));
-		resource_pp_mmu_found[6] = _mali_osk_resource_find(global_gpu_base_address + 0x1E000, &(resource_pp_mmu[6]));
-		resource_pp_mmu_found[7] = _mali_osk_resource_find(global_gpu_base_address + 0x1F000, &(resource_pp_mmu[7]));
+		resource_gp_found = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_GP, &resource_gp);
+		resource_gp_mmu_found = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_GP_MMU, &resource_gp_mmu);
+		resource_pp_found[0] = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_0, &(resource_pp[0]));
+		resource_pp_found[1] = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_1, &(resource_pp[1]));
+		resource_pp_found[2] = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_2, &(resource_pp[2]));
+		resource_pp_found[3] = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_3, &(resource_pp[3]));
+		resource_pp_found[4] = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_4, &(resource_pp[4]));
+		resource_pp_found[5] = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_5, &(resource_pp[5]));
+		resource_pp_found[6] = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_6, &(resource_pp[6]));
+		resource_pp_found[7] = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_7, &(resource_pp[7]));
+		resource_pp_mmu_found[0] = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_MMU_0, &(resource_pp_mmu[0]));
+		resource_pp_mmu_found[1] = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_MMU_1, &(resource_pp_mmu[1]));
+		resource_pp_mmu_found[2] = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_MMU_2, &(resource_pp_mmu[2]));
+		resource_pp_mmu_found[3] = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_MMU_3, &(resource_pp_mmu[3]));
+		resource_pp_mmu_found[4] = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_MMU_4, &(resource_pp_mmu[4]));
+		resource_pp_mmu_found[5] = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_MMU_5, &(resource_pp_mmu[5]));
+		resource_pp_mmu_found[6] = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_MMU_6, &(resource_pp_mmu[6]));
+		resource_pp_mmu_found[7] = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_MMU_7, &(resource_pp_mmu[7]));
+
 
 
 		if (_MALI_PRODUCT_ID_MALI450 == global_product_id)
 		{
-			resource_bcast_found = _mali_osk_resource_find(global_gpu_base_address + 0x13000, &resource_bcast);
-			resource_dlbu_found = _mali_osk_resource_find(global_gpu_base_address + 0x14000, &resource_dlbu);
-			resource_pp_mmu_bcast_found = _mali_osk_resource_find(global_gpu_base_address + 0x15000, &resource_pp_mmu_bcast);
-			resource_pp_bcast_found = _mali_osk_resource_find(global_gpu_base_address + 0x16000, &resource_pp_bcast);
+			resource_bcast_found = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_BCAST, &resource_bcast);
+			resource_dlbu_found = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_DLBU, &resource_dlbu);
+			resource_pp_mmu_bcast_found = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_MMU_BCAST, &resource_pp_mmu_bcast);
+			resource_pp_bcast_found = _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PP_BCAST, &resource_pp_bcast);
 
 			if (_MALI_OSK_ERR_OK != resource_bcast_found ||
 			    _MALI_OSK_ERR_OK != resource_dlbu_found ||
@@ -629,7 +611,7 @@ static _mali_osk_errcode_t mali_parse_config_pmu(void)
 {
 	_mali_osk_resource_t resource_pmu;
 
-	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find(global_gpu_base_address + 0x02000, &resource_pmu))
+	if (_MALI_OSK_ERR_OK == _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PMU, &resource_pmu))
 	{
 		u32 number_of_pp_cores = 0;
 		u32 number_of_l2_caches = 0;

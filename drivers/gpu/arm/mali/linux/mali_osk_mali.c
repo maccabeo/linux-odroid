@@ -23,6 +23,42 @@
 #include "mali_uk_types.h"
 #include "mali_kernel_linux.h"
 
+_mali_osk_errcode_t _mali_osk_resource_find_by_id(enum mali_resource_index index, _mali_osk_resource_t *res)
+{
+	struct mali_resource *ures = NULL;
+
+	if (NULL == mali_platform_data)
+	{
+		/* Not connected to a device */
+		return _MALI_OSK_ERR_ITEM_NOT_FOUND;
+	}
+
+	ures = &mali_platform_data->resource[index];
+
+	if (0 != ures->base)
+	{
+		if (NULL != res)
+		{
+			res->base = ures->base;
+			res->description = ures->description;
+
+			/* Any (optional) IRQ resource belonging to this resource will follow */
+			if (0 < ures->irq)
+			{
+				res->irq = ures->irq;
+			}
+			else
+			{
+				res->irq = -1;
+			}
+		}
+		return _MALI_OSK_ERR_OK;
+	}
+
+	return _MALI_OSK_ERR_ITEM_NOT_FOUND;
+
+}
+
 _mali_osk_errcode_t _mali_osk_resource_find(u32 addr, _mali_osk_resource_t *res)
 {
 	int i;

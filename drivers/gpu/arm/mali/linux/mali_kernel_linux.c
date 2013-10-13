@@ -732,6 +732,8 @@ static struct _mali_osk_device_data *mali_parse_dt (struct platform_device *pdev
 	struct device_node *np = pdev->dev.of_node;
 	u32 tmp_interval, tmp_size;
 	struct _mali_osk_device_data* os_data = (struct _mali_osk_device_data*)mali_platform_data;
+	struct resource *res_mem;
+	enum mali_resource_index index;
 
 	if (NULL != os_data)
 		return os_data;
@@ -739,6 +741,8 @@ static struct _mali_osk_device_data *mali_parse_dt (struct platform_device *pdev
 	os_data = devm_kzalloc(&pdev->dev, sizeof(struct _mali_osk_device_data), GFP_KERNEL);
 	if (!os_data)
 		return NULL;
+
+	mali_platform_data = os_data;
 
 	if (of_property_read_u32(np, "utilization-interval", &tmp_interval))
 		goto error_parse_dt;
@@ -749,7 +753,92 @@ static struct _mali_osk_device_data *mali_parse_dt (struct platform_device *pdev
 	os_data->utilization_interval = tmp_interval;
 	os_data->utilization_callback = mali_gpu_utilization_callback;
 
-	mali_platform_data = os_data;
+	index = MALI_RESOURCE_INDEX_L2;
+	res_mem = platform_get_resource_byname (pdev, IORESOURCE_MEM, "l2");
+	if (res_mem) {
+		os_data->resource[index].description = res_mem->name ?: dev_name(&pdev->dev);
+		os_data->resource[index].base = res_mem->start;
+	}
+
+	index = MALI_RESOURCE_INDEX_GP;
+	res_mem = platform_get_resource_byname (pdev, IORESOURCE_MEM, "gp");
+	if (res_mem) {
+		os_data->resource[index].description = res_mem->name ?: dev_name(&pdev->dev);
+		os_data->resource[index].base = res_mem->start;
+		os_data->resource[index].irq = platform_get_irq_byname(pdev, "gp");
+	}
+
+	index = MALI_RESOURCE_INDEX_GP_MMU;
+	res_mem = platform_get_resource_byname (pdev, IORESOURCE_MEM, "gp_mmu");
+	if (res_mem) {
+		os_data->resource[index].description = res_mem->name ?: dev_name(&pdev->dev);
+		os_data->resource[index].base = res_mem->start;
+		os_data->resource[index].irq = platform_get_irq_byname(pdev, "gp_mmu");
+	}
+
+	index = MALI_RESOURCE_INDEX_PP_0;
+	res_mem = platform_get_resource_byname (pdev, IORESOURCE_MEM, "pp_0");
+	if (res_mem) {
+		os_data->resource[index].description = res_mem->name ?: dev_name(&pdev->dev);
+		os_data->resource[index].base = res_mem->start;
+		os_data->resource[index].irq = platform_get_irq_byname(pdev, "pp_0");
+	}
+
+	index = MALI_RESOURCE_INDEX_PP_1;
+	res_mem = platform_get_resource_byname (pdev, IORESOURCE_MEM, "pp_1");
+	if (res_mem) {
+		os_data->resource[index].description = res_mem->name ?: dev_name(&pdev->dev);
+		os_data->resource[index].base = res_mem->start;
+		os_data->resource[index].irq = platform_get_irq_byname(pdev, "pp_1");
+	}
+
+	index = MALI_RESOURCE_INDEX_PP_2;
+	res_mem = platform_get_resource_byname (pdev, IORESOURCE_MEM, "pp_2");
+	if (res_mem) {
+		os_data->resource[index].description = res_mem->name ?: dev_name(&pdev->dev);
+		os_data->resource[index].base = res_mem->start;
+		os_data->resource[index].irq = platform_get_irq_byname(pdev, "pp_2");
+	}
+
+	index = MALI_RESOURCE_INDEX_PP_3;
+	res_mem = platform_get_resource_byname (pdev, IORESOURCE_MEM, "pp_3");
+	if (res_mem) {
+		os_data->resource[index].description = res_mem->name ?: dev_name(&pdev->dev);
+		os_data->resource[index].base = res_mem->start;
+		os_data->resource[index].irq = platform_get_irq_byname(pdev, "pp_3");
+	}
+
+	index = MALI_RESOURCE_INDEX_PP_MMU_0;
+	res_mem = platform_get_resource_byname (pdev, IORESOURCE_MEM, "pp_mmu_0");
+	if (res_mem) {
+		os_data->resource[index].description = res_mem->name ?: dev_name(&pdev->dev);
+		os_data->resource[index].base = res_mem->start;
+		os_data->resource[index].irq = platform_get_irq_byname(pdev, "pp_mmu_0");
+	}
+
+	index = MALI_RESOURCE_INDEX_PP_MMU_1;
+	res_mem = platform_get_resource_byname (pdev, IORESOURCE_MEM, "pp_mmu_1");
+	if (res_mem) {
+		os_data->resource[index].description = res_mem->name ?: dev_name(&pdev->dev);
+		os_data->resource[index].base = res_mem->start;
+		os_data->resource[index].irq = platform_get_irq_byname(pdev, "pp_mmu_1");
+	}
+
+	index = MALI_RESOURCE_INDEX_PP_MMU_2;
+	res_mem = platform_get_resource_byname (pdev, IORESOURCE_MEM, "pp_mmu_2");
+	if (res_mem) {
+		os_data->resource[index].description = res_mem->name ?: dev_name(&pdev->dev);
+		os_data->resource[index].base = res_mem->start;
+		os_data->resource[index].irq = platform_get_irq_byname(pdev, "pp_mmu_2");
+	}
+
+	index = MALI_RESOURCE_INDEX_PP_MMU_3;
+	res_mem = platform_get_resource_byname (pdev, IORESOURCE_MEM, "pp_mmu_3");
+	if (res_mem) {
+		os_data->resource[index].description = res_mem->name ?: dev_name(&pdev->dev);
+		os_data->resource[index].base = res_mem->start;
+		os_data->resource[index].irq = platform_get_irq_byname(pdev, "pp_mmu_3");
+	}
 
         return os_data;
 

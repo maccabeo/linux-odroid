@@ -8,6 +8,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#include <linux/kernel.h>
+
 /**
  * @file mali_utgard.h
  * Defines types and interface exposed by the Mali Utgard device driver
@@ -300,6 +302,56 @@
 		.end = pp_mmu_bcast_addr + 0x100, \
 	},
 
+struct mali_gpu_utilization_data
+{
+	unsigned int utilization_gpu; /* Utilization for GP and all PP cores combined, 0 = no utilization, 256 = full utilization */
+	unsigned int utilization_gp;  /* Utilization for GP core only, 0 = no utilization, 256 = full utilization */
+	unsigned int utilization_pp;  /* Utilization for all PP cores combined, 0 = no utilization, 256 = full utilization */
+};
+
+/** @brief resource description struct
+ *
+ * Platform independent representation of a Mali HW resource
+ */
+struct mali_resource
+{
+        const char * description;       /**< short description of the resource */
+        u32 base;                       /**< Physical base address of the resource, as seen by Mali resources. */
+        u32 irq;                        /**< IRQ number delivered to the CPU, or -1 to tell the driver to probe for it (if possible) */
+};
+
+enum mali_resource_index {
+	MALI_RESOURCE_INDEX_L2,
+	MALI_RESOURCE_INDEX_L2_GP,
+	MALI_RESOURCE_INDEX_L2_PP_GRP0,
+	MALI_RESOURCE_INDEX_L2_PP_GRP1,
+	MALI_RESOURCE_INDEX_GP,
+	MALI_RESOURCE_INDEX_GP_MMU,
+	MALI_RESOURCE_INDEX_PP_0,
+	MALI_RESOURCE_INDEX_PP_MMU_0,
+	MALI_RESOURCE_INDEX_PP_1,
+	MALI_RESOURCE_INDEX_PP_MMU_1,
+	MALI_RESOURCE_INDEX_PP_2,
+	MALI_RESOURCE_INDEX_PP_MMU_2,
+	MALI_RESOURCE_INDEX_PP_3,
+	MALI_RESOURCE_INDEX_PP_MMU_3,
+	MALI_RESOURCE_INDEX_PP_4,
+	MALI_RESOURCE_INDEX_PP_MMU_4,
+	MALI_RESOURCE_INDEX_PP_5,
+	MALI_RESOURCE_INDEX_PP_MMU_5,
+	MALI_RESOURCE_INDEX_PP_6,
+	MALI_RESOURCE_INDEX_PP_MMU_6,
+	MALI_RESOURCE_INDEX_PP_7,
+	MALI_RESOURCE_INDEX_PP_MMU_7,
+	MALI_RESOURCE_INDEX_PMU,
+	MALI_RESOURCE_INDEX_BCAST,
+	MALI_RESOURCE_INDEX_DLBU,
+	MALI_RESOURCE_INDEX_PP_BCAST,
+	MALI_RESOURCE_INDEX_PP_MMU_BCAST,
+
+	MALI_RESOURCE_INDEX_LAST,
+};
+
 struct mali_gpu_device_data
 {
 	/* Dedicated GPU memory range (physical). */
@@ -317,7 +369,7 @@ struct mali_gpu_device_data
 	unsigned long utilization_interval;
 
 	/* Function that will receive periodic GPU utilization numbers */
-	void (*utilization_handler)(unsigned int);
+	void (*utilization_callback)(struct mali_gpu_utilization_data *data);
 };
 
 /** @brief MALI GPU power down using MALI in-built PMU

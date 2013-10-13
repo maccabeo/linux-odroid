@@ -45,8 +45,10 @@ struct _mali_osk_device_data
 	u32 utilization_interval;
 
 	/* Function that will receive periodic GPU utilization numbers */
-	void (*utilization_handler)(unsigned int);
+	void (*utilization_callback)(struct mali_gpu_utilization_data *data);
 };
+
+_mali_osk_errcode_t _mali_osk_resource_find_by_id(enum mali_resource_index, _mali_osk_resource_t *res);
 
 /** @brief Find Mali GPU HW resource
  *

@@ -55,14 +55,18 @@ struct mali_pp_core *mali_pp_create(const _mali_osk_resource_t *resource, struct
 		{
 			_mali_osk_errcode_t ret;
 
+	MALI_DEBUG_PRINT(2, ("Mali PP: A\n"));
 			if (!is_virtual)
 			{
+	MALI_DEBUG_PRINT(2, ("Mali PP: not is virtual\n"));
 				ret = mali_pp_reset(core);
 			}
 			else
 			{
+	MALI_DEBUG_PRINT(2, ("Mali PP: is virtual\n"));
 				ret = _MALI_OSK_ERR_OK;
 			}
+	MALI_DEBUG_PRINT(2, ("Mali PP: B\n"));
 
 			if (_MALI_OSK_ERR_OK == ret)
 			{
@@ -72,6 +76,7 @@ struct mali_pp_core *mali_pp_create(const _mali_osk_resource_t *resource, struct
 					/* Setup IRQ handlers (which will do IRQ probing if needed) */
 					MALI_DEBUG_ASSERT(!is_virtual || -1 != resource->irq);
 
+	MALI_DEBUG_PRINT(2, ("Mali PP: B.0 irq (%d)\n", resource->irq));
 					core->irq = _mali_osk_irq_init(resource->irq,
 					                               mali_group_upper_half_pp,
 					                               group,
@@ -98,6 +103,7 @@ struct mali_pp_core *mali_pp_create(const _mali_osk_resource_t *resource, struct
 				}
 			}
 			mali_hw_core_delete(&core->hw_core);
+	MALI_DEBUG_PRINT(2, ("Mali PP: C\n"));
 		}
 
 		_mali_osk_free(core);

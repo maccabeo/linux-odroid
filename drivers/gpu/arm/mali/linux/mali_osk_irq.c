@@ -64,6 +64,10 @@ _mali_osk_irq_t *_mali_osk_irq_init( u32 irqnum, _mali_osk_irq_uhandler_t uhandl
 			}
 			while (irq < 0 && (err == _MALI_OSK_ERR_OK) && probe_count--);
 
+
+			MALI_DEBUG_PRINT(2, ("A irq(%d) err (%d)\n", irq, err));
+
+
 			if (irq < 0 || (_MALI_OSK_ERR_OK != err)) irqnum = -1;
 			else irqnum = irq;
 		}
