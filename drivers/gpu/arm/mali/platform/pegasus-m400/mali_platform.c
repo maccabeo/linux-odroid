@@ -477,6 +477,10 @@ _mali_osk_errcode_t mali_platform_deinit()
 	}
 #endif
 
+#ifdef CONFIG_PM_RUNTIME
+        pm_runtime_disable(&(mali_platform_device->dev));
+#endif
+
 	MALI_SUCCESS;
 }
 
