@@ -773,6 +773,8 @@ _mali_osk_errcode_t mali_initialize_subsystems(void)
 	err = _mali_osk_pm_dev_ref_add();
 	if (_MALI_OSK_ERR_OK != err) goto pm_always_on_failed;
 
+	mali_platform_init();
+
 	/* Detect which Mali GPU we are dealing with */
 	err = mali_parse_product_info();
 	if (_MALI_OSK_ERR_OK != err) goto product_info_parsing_failed;
@@ -809,8 +811,6 @@ _mali_osk_errcode_t mali_initialize_subsystems(void)
 
 	/* Allowing the system to be turned off */
 	_mali_osk_pm_dev_ref_dec();
-
-	mali_platform_init();
 
 	MALI_SUCCESS; /* all ok */
 
@@ -863,7 +863,6 @@ void mali_terminate_subsystems(void)
 	MALI_DEBUG_PRINT(2, ("terminate_subsystems() called\n"));
 
 	/* shut down subsystems in reverse order from startup */
-	mali_platform_deinit();
 
 	/* We need the GPU to be powered up for the terminate sequence */
 	_mali_osk_pm_dev_ref_add();
@@ -883,6 +882,7 @@ void mali_terminate_subsystems(void)
 		mali_pmu_delete(pmu);
 	}
 	mali_pm_terminate();
+	mali_platform_deinit();
 	mali_memory_terminate();
 #if defined(CONFIG_MALI400_PROFILING)
 	_mali_osk_profiling_term();

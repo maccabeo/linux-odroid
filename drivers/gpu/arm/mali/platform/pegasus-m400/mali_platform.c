@@ -32,13 +32,13 @@
 #include <asm/io.h>
 #include <mach/regs-pmu.h>
 
-#define EXTXTALCLK_NAME 	"ext_xtal"
+#define EXTXTALCLK_NAME 	"xxti"
 #define VPLLSRCCLK_NAME 	"vpll_src"
 #define FOUTVPLLCLK_NAME	"fout_vpll"
 #define SCLVPLLCLK_NAME 	"sclk_vpll"
 #define GPUMOUT1CLK_NAME	"mout_g3d1"
 
-#define MPLLCLK_NAME 		"mout_mpll"
+#define MPLLCLK_NAME 		"mout_mpll_user_t"
 #define GPUMOUT0CLK_NAME 	"mout_g3d0"
 #define GPUCLK_NAME 		"sclk_g3d"
 #define CLK_DIV_STAT_G3D 	0x1003C62C
@@ -172,11 +172,13 @@ unsigned long mali_clk_get_rate(void)
 
 mali_bool mali_clk_get(mali_bool bis_vpll)
 {
+	struct device *dev = &mali_platform_device->dev;
+
 	if (bis_vpll == MALI_TRUE)
 	{
 		if (ext_xtal_clock == NULL)
 		{
-			ext_xtal_clock = clk_get(NULL,EXTXTALCLK_NAME);
+			ext_xtal_clock = clk_get(dev,EXTXTALCLK_NAME);
 			if (IS_ERR(ext_xtal_clock)) {
 				MALI_PRINT( ("MALI Error : failed to get source ext_xtal_clock\n"));
 				return MALI_FALSE;
@@ -195,7 +197,7 @@ mali_bool mali_clk_get(mali_bool bis_vpll)
 #endif
 		if (fout_vpll_clock == NULL)
 		{
-			fout_vpll_clock = clk_get(NULL,FOUTVPLLCLK_NAME);
+			fout_vpll_clock = clk_get(dev,FOUTVPLLCLK_NAME);
 			if (IS_ERR(fout_vpll_clock)) {
 				MALI_PRINT( ("MALI Error : failed to get source fout_vpll_clock\n"));
 				return MALI_FALSE;
@@ -204,7 +206,7 @@ mali_bool mali_clk_get(mali_bool bis_vpll)
 
 		if (sclk_vpll_clock == NULL)
 		{
-			sclk_vpll_clock = clk_get(NULL,SCLVPLLCLK_NAME);
+			sclk_vpll_clock = clk_get(dev,SCLVPLLCLK_NAME);
 			if (IS_ERR(sclk_vpll_clock)) {
 				MALI_PRINT( ("MALI Error : failed to get source sclk_vpll_clock\n"));
 				return MALI_FALSE;
@@ -213,7 +215,7 @@ mali_bool mali_clk_get(mali_bool bis_vpll)
 
 		if (mali_parent_clock == NULL)
 		{
-			mali_parent_clock = clk_get(NULL, GPUMOUT1CLK_NAME);
+			mali_parent_clock = clk_get(dev, GPUMOUT1CLK_NAME);
 
 			if (IS_ERR(mali_parent_clock)) {
 				MALI_PRINT( ( "MALI Error : failed to get source mali parent clock\n"));
@@ -225,7 +227,7 @@ mali_bool mali_clk_get(mali_bool bis_vpll)
 	{
 		if (mpll_clock == NULL)
 		{
-			mpll_clock = clk_get(NULL,MPLLCLK_NAME);
+			mpll_clock = clk_get(dev,MPLLCLK_NAME);
 
 			if (IS_ERR(mpll_clock)) {
 				MALI_PRINT( ("MALI Error : failed to get source mpll clock\n"));
@@ -235,7 +237,7 @@ mali_bool mali_clk_get(mali_bool bis_vpll)
 
 		if (mali_parent_clock == NULL)
 		{
-			mali_parent_clock = clk_get(NULL, GPUMOUT0CLK_NAME);
+			mali_parent_clock = clk_get(dev, GPUMOUT0CLK_NAME);
 
 			if (IS_ERR(mali_parent_clock)) {
 				MALI_PRINT( ( "MALI Error : failed to get source mali parent clock\n"));
@@ -247,7 +249,7 @@ mali_bool mali_clk_get(mali_bool bis_vpll)
 	// mali clock get always.
 	if (mali_clock == NULL)
 	{
-		mali_clock = clk_get(NULL, GPUCLK_NAME);
+		mali_clock = clk_get(dev, GPUCLK_NAME);
 
 		if (IS_ERR(mali_clock)) {
 			MALI_PRINT( ("MALI Error : failed to get source mali clock\n"));
@@ -344,7 +346,7 @@ mali_bool mali_clk_set_rate(unsigned int clk, unsigned int mhz)
 		clk_set_parent(mali_clock, mali_parent_clock);
 	}
 
-	if (clk_enable(mali_clock) < 0)
+	if (clk_prepare_enable(mali_clock) < 0)
 	{
 		printk("~~~~~~~~ERROR: [%s] %d\n ",__func__,__LINE__);
 		return MALI_FALSE;
@@ -452,7 +454,7 @@ static mali_bool deinit_mali_clock(void)
 
 _mali_osk_errcode_t mali_platform_init()
 {
-	MALI_CHECK(init_mali_clock(), _MALI_OSK_ERR_FAULT);
+	MALI_CHECK(init_mali_clock(mali_platform_device), _MALI_OSK_ERR_FAULT);
 #if CONFIG_MALI_DVFS
 	if (!clk_register_map) clk_register_map = _mali_osk_mem_mapioregion( CLK_DIV_STAT_G3D, 0x20, CLK_DESC );
 	if(!init_mali_dvfs_status(MALI_DVFS_DEFAULT_STEP))

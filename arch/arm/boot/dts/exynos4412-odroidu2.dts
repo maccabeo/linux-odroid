@@ -119,9 +119,9 @@
 		samsung,power-domain = <&pd_g3d>;
 		status = "okay";
 
-		clocks = <3>, <7>, <11>, <393>, <17>, <392>, <172>;
-		clock-names = "ext_xtal", "fout_vpll", "sclk_vpll", "mout_g3d1",
-				"mout_mpll", "mout_g3d0", "sclk_g3d";
+		clocks = <&clock 1>, <&clock 7>, <&clock 11>, <&clock 393>, <&clock 17>, <&clock 392>, <&clock 172>;
+		clock-names = "xxti", "fout_vpll", "sclk_vpll", "mout_g3d1",
+				"mout_mpll_user_t", "mout_g3d0", "sclk_g3d";
 
 		/* l2 , gp, pp_0, pp_1, pp2, pp_3 */
 		reg = <0x13001000 0x200>, <0x13000000 0x100>, <0x13003000 0x100>,
