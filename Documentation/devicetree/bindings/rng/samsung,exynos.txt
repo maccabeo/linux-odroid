@@ -1,0 +1,13 @@
+Exynos Random number generator
+
+Required properties:
+
+- compatible : should be "samsung,exynos-rng"
+- reg : Specifies base physical address and size of the registers.
+
+Example:
+
+rng {
+        compatible = "samsung,exynos-rng";
+        reg = <0x7e104000 0x10>;
+};

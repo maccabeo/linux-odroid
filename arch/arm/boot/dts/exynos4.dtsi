@@ -210,6 +210,12 @@
 		status = "disabled";
 	};
 
+	rng {
+		compatible = "samsung,exynos-rng";
+		reg = <0x7e104000 0x10>;
+	};
+
+
 	keypad@100A0000 {
 		compatible = "samsung,s5pv210-keypad";
 		reg = <0x100A0000 0x100>;

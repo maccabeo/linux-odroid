@@ -24,6 +24,8 @@
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/io.h>
+#include <linux/of_address.h>
+#include <linux/of_platform.h>
 #include <linux/platform_device.h>
 #include <linux/clk.h>
 #include <linux/pm_runtime.h>
@@ -103,14 +105,17 @@ static int exynos_read(struct hwrng *rng, void *buf,
 
 static int exynos_rng_probe(struct platform_device *pdev)
 {
+        struct device *dev = &pdev->dev;
+        struct device_node *np = dev->of_node;
 	struct exynos_rng *exynos_rng;
-	struct resource *res;
 
 	exynos_rng = devm_kzalloc(&pdev->dev, sizeof(struct exynos_rng),
 					GFP_KERNEL);
+printk(KERN_INFO "Exynos RNG detection START\n");
 	if (!exynos_rng)
 		return -ENOMEM;
 
+printk(KERN_INFO "Exynos RNG detection: allocate ok\n");
 	exynos_rng->dev = &pdev->dev;
 	exynos_rng->rng.name = "exynos";
 	exynos_rng->rng.init =	exynos_init;
@@ -120,11 +125,12 @@ static int exynos_rng_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "Couldn't get clock.\n");
 		return -ENOENT;
 	}
+printk(KERN_INFO "Exynos RNG detection : clock ok\n");
 
-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	exynos_rng->mem = devm_ioremap_resource(&pdev->dev, res);
+	exynos_rng->mem = of_iomap(np, 0);
 	if (IS_ERR(exynos_rng->mem))
 		return PTR_ERR(exynos_rng->mem);
+printk(KERN_INFO "Exynos RNG detection : mem ok\n");
 
 	platform_set_drvdata(pdev, exynos_rng);
 
@@ -167,10 +173,17 @@ static int exynos_rng_runtime_resume(struct device *dev)
 static UNIVERSAL_DEV_PM_OPS(exynos_rng_pm_ops, exynos_rng_runtime_suspend,
 					exynos_rng_runtime_resume, NULL);
 
+static const struct of_device_id exynos_rng_of_match[] = {
+        { .compatible = "samsung,exynos-rng", },
+        {},
+};
+MODULE_DEVICE_TABLE(of, exynos_rng_of_match);
+
 static struct platform_driver exynos_rng_driver = {
 	.driver		= {
 		.name	= "exynos-rng",
 		.owner	= THIS_MODULE,
+		.of_match_table = exynos_rng_of_match,
 		.pm	= &exynos_rng_pm_ops,
 	},
 	.probe		= exynos_rng_probe,
