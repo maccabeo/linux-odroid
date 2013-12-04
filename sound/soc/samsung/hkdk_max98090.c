@@ -24,9 +24,8 @@
 
 #include <mach/regs-clock.h>
 
-#include "i2s.h"
-#include "s3c-i2s-v2.h"
 #include "../codecs/max98090.h"
+#include "i2s.h"
 
 #if 0
 static struct platform_device *odroid_snd_device;
