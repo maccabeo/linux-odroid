@@ -286,6 +286,7 @@ static struct platform_driver hkdk_max98090_driver = {
 		.owner	= THIS_MODULE,
 		.pm	= &snd_soc_pm_ops,
 		.of_match_table = of_match_ptr(samsung_hkdk_max98090_of_match),
+		.pm     = &snd_soc_pm_ops,
 	},
 	.probe		= hkdk_max98090_driver_probe,
 	.remove		= hkdk_max98090_driver_remove,
