@@ -307,7 +307,6 @@
                 status = "okay";
         };
 
-/*
 	tmu@100C0000 {
 		compatible = "samsung,exynos4412-tmu";
 		interrupt-parent = <&combiner>;
@@ -317,7 +316,6 @@
 		clock-names = "tmu_apbif";
 		vtmu-supply = <&ldo10_reg>;
 	};
-*/
 
 	sdhci@12530000 {
 		bus-width = <4>;
