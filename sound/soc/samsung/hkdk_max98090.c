@@ -31,6 +31,37 @@
 static struct platform_device *odroid_snd_device;
 #endif
 
+static int set_audio_clock_heirachy(struct platform_device *pdev)
+{
+	struct clk *fout_epll, *mout_audss;
+	int ret = 0;
+
+	fout_epll = clk_get(NULL, "fout_epll");
+	if (IS_ERR(fout_epll)) {
+		printk(KERN_WARNING "%s: Cannot find fout_epll.\n",
+				__func__);
+		return -EINVAL;
+	}
+
+	mout_audss = clk_get(&pdev->dev, "mout_audss");
+	if (IS_ERR(mout_audss)) {
+		printk(KERN_WARNING "%s: Cannot find mout_audss.\n",
+				__func__);
+		ret = -EINVAL;
+		goto out1;
+	}
+
+	/* Set audio clock hierarchy for S/PDIF */
+	clk_set_parent(mout_audss, fout_epll);
+
+	clk_put(mout_audss);
+out1:
+	clk_put(fout_epll);
+
+	return ret;
+}
+
+
 static int set_epll_rate(unsigned long rate)
 {
 	struct clk *fout_epll;
@@ -41,11 +72,8 @@ static int set_epll_rate(unsigned long rate)
 		return PTR_ERR(fout_epll);
 	}
 
-	if (rate == clk_get_rate(fout_epll))
-		goto out;
-
-	clk_set_rate(fout_epll, rate);
-out:
+	if (rate != clk_get_rate(fout_epll))
+		clk_set_rate(fout_epll, rate);
 	clk_put(fout_epll);
 
 	return 0;
@@ -59,6 +87,7 @@ static int odroid_hw_params(struct snd_pcm_substream *substream,
 	struct snd_soc_dai *cpu_dai = rtd->cpu_dai;
 	int bfs, psr, rfs, ret;
 	unsigned long rclk;
+	printk("format = (%d)\n", params_format(params));
 	switch (params_format(params)) {
 	case SNDRV_PCM_FORMAT_U24:
 	case SNDRV_PCM_FORMAT_S24:
@@ -71,44 +100,38 @@ static int odroid_hw_params(struct snd_pcm_substream *substream,
 	default:
 		return -EINVAL;
 	}
+	printk("audio bfs (%d)\n", bfs);
 	switch (params_rate(params)) {
-	case 16000:
-	case 22050:
-	case 24000:
-	case 32000:
 	case 44100:
 	case 48000:
+	case 64000:
 	case 88200:
 	case 96000:
-		if (bfs == 48)
-			rfs = 384;
-		else
-			rfs = 256;
-		break;
-	case 64000:
-		rfs = 384;
+		rfs = 8 * bfs;
 		break;
 	case 8000:
 	case 11025:
 	case 12000:
-		if (bfs == 48)
-			rfs = 768;
-		else
-			rfs = 512;
+	case 16000:
+	case 22050:
+	case 24000:
+	case 32000:
+		rfs = 16 * bfs;
 		break;
 	default:
 		return -EINVAL;
 	}
+	printk("audio rfs (%d rate (%u))\n", rfs, params_rate(params));
 	rclk = params_rate(params) * rfs;
 	switch (rclk) {
 	case 4096000:
 	case 5644800:
 	case 6144000:
+	case 8192000:
 	case 8467200:
 	case 9216000:
 		psr = 8;
 		break;
-	case 8192000:
 	case 11289600:
 	case 12288000:
 	case 16934400:
@@ -130,22 +153,29 @@ static int odroid_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
+	printk("audio: psr (%d)\n", psr);
+	printk("audio: set rclk (%lu)\n", rclk);
+	printk("audio: set epll (%lu)\n", rclk * psr);
 	set_epll_rate(rclk * psr);
 
+	/* set codec DAI configuration */
 	ret = snd_soc_dai_set_fmt(codec_dai, SND_SOC_DAIFMT_I2S
 			| SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBS_CFS);
 	if (ret < 0)
 		return ret;
 
+	/* set cpu DAI configuration */
 	ret = snd_soc_dai_set_fmt(cpu_dai, SND_SOC_DAIFMT_I2S
 			| SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBS_CFS);
 	if (ret < 0)
 		return ret;
 
+	printk("codec dai\n");
 	ret = snd_soc_dai_set_sysclk(codec_dai, 0, rclk, SND_SOC_CLOCK_IN);
 	if (ret < 0)
 		return ret;
 
+printk("cpu dai cdclk\n");
 	ret = snd_soc_dai_set_sysclk(cpu_dai, SAMSUNG_I2S_CDCLK,
 			0, SND_SOC_CLOCK_OUT);
 	if (ret < 0)
@@ -261,6 +291,14 @@ printk("hkdk_max98090_driver_probe: B\n");
 printk("hkdk_max98090_driver_probe: C\n");
 
 	platform_set_drvdata(pdev, card);
+
+
+	/* Set audio clock hierarchy manually */
+	ret = set_audio_clock_heirachy(pdev);
+	if (ret) {
+		dev_err(&pdev->dev, "set_audio_clock_heirachy failed (%d)\n", ret);
+		return ret;
+	}
 
 	ret = devm_snd_soc_register_card(&pdev->dev, card);
 	if (ret) {

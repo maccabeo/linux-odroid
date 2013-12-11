@@ -1553,11 +1553,14 @@ static void max98090_configure_bclk(struct snd_soc_codec *codec)
 		return;
 	}
 
+	printk("slave ?\n");
 	/* Skip configuration when operating as slave */
 	if (!(snd_soc_read(codec, M98090_REG_MASTER_MODE) &
 		M98090_MAS_MASK)) {
 		return;
 	}
+	printk("master !\n");
+
 
 	/* Check for supported PCLK to LRCLK ratios */
 	for (i = 0; i < ARRAY_SIZE(pclk_rates); i++) {
@@ -1863,7 +1866,7 @@ static int max98090_dai_hw_params(struct snd_pcm_substream *substream,
 			M98090_MODE_MASK, M98090_MODE_MASK);
 
 	/* Update sample rate mode */
-	if (max98090->lrclk < 50000)
+	if (max98090->lrclk < 48000)
 		snd_soc_update_bits(codec, M98090_REG_FILTER_CONFIG,
 			M98090_DHF_MASK, 0);
 	else
@@ -1904,22 +1907,24 @@ static int max98090_dai_set_sysclk(struct snd_soc_dai *dai,
 	struct snd_soc_codec *codec = dai->codec;
 	struct max98090_priv *max98090 = snd_soc_codec_get_drvdata(codec);
 
+	printk("max98090: request freq (%u)\n", freq);
 	/* Requested clock frequency is already setup */
 	if (freq == max98090->sysclk)
 		return 0;
+	printk("max98090: not already done. Setting up sysfreq (%u).\n", freq);
 
 	/* Setup clocks for slave mode, and using the PLL
 	 * PSCLK = 0x01 (when master clk is 10MHz to 20MHz)
 	 *		 0x02 (when master clk is 20MHz to 40MHz)..
 	 *		 0x03 (when master clk is 40MHz to 60MHz)..
 	 */
-	if ((freq >= 10000000) && (freq < 20000000)) {
+	if ((freq >= 10000000) && (freq <= 20000000)) {
 		snd_soc_write(codec, M98090_REG_SYSTEM_CLOCK,
 			M98090_PSCLK_DIV1);
-	} else if ((freq >= 20000000) && (freq < 40000000)) {
+	} else if ((freq > 20000000) && (freq <= 40000000)) {
 		snd_soc_write(codec, M98090_REG_SYSTEM_CLOCK,
 			M98090_PSCLK_DIV2);
-	} else if ((freq >= 40000000) && (freq < 60000000)) {
+	} else if ((freq > 40000000) && (freq <= 60000000)) {
 		snd_soc_write(codec, M98090_REG_SYSTEM_CLOCK,
 			M98090_PSCLK_DIV4);
 	} else {

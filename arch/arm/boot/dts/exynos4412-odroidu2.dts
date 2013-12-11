@@ -89,7 +89,7 @@
 	};
 
 	chosen {
-                bootargs = "no_console_suspend console=ttySAC1,115200n8 console=tty0 earlyprintk smsc95xx.macaddr=\"F2:04:5F:B8:D6:6C\"  max77686_irq.debug_mask=7 dynamic_debug.verbose=1  dyndbg=\"module dw_mmc +p;module pwm_samsung +p;module pwm_bl +p;module backlight +p;file gpiolib-of.c +p;module domain_governor +p;module domain +p;module pm_domains +p;module max77686 +p;module clk +p;\"";       };
+                bootargs = "dynamic_debug.verbose=1 no_console_suspend console=ttySAC1,115200n8 console=tty0 earlyprintk smsc95xx.macaddr=\"F2:04:5F:B8:D6:6C\"  max77686_irq.debug_mask=7 dyndbg=\"module dw_mmc +p;module pwm_samsung +p;module pwm_bl +p;module backlight +p;file gpiolib-of.c +p;module domain_governor +p;module domain +p;module pm_domains +p;module max77686 +p;module clk +p;module snd_soc_i2s +p;\"";       };
 
 	firmware@0203F000 {
 		compatible = "samsung,secure-firmware";
@@ -405,6 +405,11 @@
 
 		samsung,i2s-controller = <&i2s0>;
 		samsung,audio-codec = <&max98090>;
+		clocks = <&clock_audss EXYNOS_I2S_BUS>,
+			<&clock_audss EXYNOS_I2S_BUS>,
+			<&clock_audss EXYNOS_SCLK_I2S>,
+			<&clock_audss EXYNOS_MOUT_AUDSS>;
+		clock-names = "iis", "i2s_opclk0", "i2s_opclk1", "mout_audss";
 	};
 
 
