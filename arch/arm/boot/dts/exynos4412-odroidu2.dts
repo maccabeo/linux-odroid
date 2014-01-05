@@ -561,8 +561,7 @@
 
 		max77686: pmic@09 {
 			compatible = "maxim,max77686";
-			interrupt-parent = <&gpx3>;
-			interrupts = <2 8>;
+                        interrupts-extended = <&gpx3 2 1>, <&gpx1 2 1>;
 			reg = <0x09>;
 			pinctrl-0 = <&eint26>;
 			pinctrl-names = "default";

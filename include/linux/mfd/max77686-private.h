@@ -229,6 +229,7 @@ struct max77686_dev {
 
 	int irq;
 	int irq_gpio;
+	int ono;
 	bool wakeup;
 	struct mutex irqlock;
 	int irq_masks_cur[MAX77686_IRQ_GROUP_NR];

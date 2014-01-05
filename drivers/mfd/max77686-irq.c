@@ -305,6 +305,16 @@ int max77686_irq_init(struct max77686_dev *max77686)
 		dev_err(max77686->dev, "Failed to request IRQ %d: %d\n",
 			max77686->irq, ret);
 
+        if (!max77686->ono)
+                return 0;
+
+        ret = request_threaded_irq(max77686->ono, NULL, max77686_irq_thread,
+                        IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING |
+                        IRQF_ONESHOT, "max77686-ono", max77686);
+
+        if (ret)
+                dev_err(max77686->dev, "Failed to request ono-IRQ %d: %d\n",
+                                max77686->ono, ret);
 
 	if (debug_mask & MAX77686_DEBUG_IRQ_INFO)
 		pr_info("%s-\n", __func__);

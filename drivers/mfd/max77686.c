@@ -32,6 +32,7 @@
 #include <linux/mfd/max77686-private.h>
 #include <linux/err.h>
 #include <linux/of.h>
+#include <linux/of_irq.h>
 
 #define I2C_ADDR_RTC	(0x0C >> 1)
 
@@ -62,6 +63,8 @@ static struct max77686_platform_data *max77686_i2c_parse_dt_pdata(struct device
 		dev_err(dev, "could not allocate memory for pdata\n");
 		return NULL;
 	}
+
+	pd->ono = irq_of_parse_and_map(dev->of_node, 1);
 
 	dev->platform_data = pd;
 	return pd;
@@ -112,6 +115,7 @@ if (pdata) {
 	max77686->irq_gpio = pdata->irq_gpio;
 	max77686->irq = i2c->irq;
 
+	max77686->ono = pdata->ono;
 	max77686->regmap = devm_regmap_init_i2c(i2c, &max77686_regmap_config);
 	if (IS_ERR(max77686->regmap)) {
 		ret = PTR_ERR(max77686->regmap);
