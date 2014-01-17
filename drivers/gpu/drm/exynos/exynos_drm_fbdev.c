@@ -24,6 +24,11 @@
 #include "exynos_drm_gem.h"
 #include "exynos_drm_iommu.h"
 
+#include <linux/ump_kernel_interface_ref_drv.h>
+
+#define GET_UMP_SECURE_ID_BUF1   _IOWR('m', 311, unsigned int)
+#define GET_UMP_SECURE_ID_BUF2   _IOWR('m', 312, unsigned int)
+
 #define MAX_CONNECTOR		4
 #define PREFERRED_BPP		32
 
@@ -62,6 +67,60 @@ static int exynos_drm_fb_mmap(struct fb_info *info,
 	return 0;
 }
 
+static int show_ump_secure_id(struct fb_info *info, unsigned long arg, int buf)
+{
+	int buf_len = info->fix.smem_len;
+	u32 __user *psecureid = (u32 __user *) arg;
+	ump_secure_id secure_id;
+	ump_dd_physical_block ump_memory_description;
+	ump_dd_handle ump_wrapped_buffer;
+
+
+	if (info->var.yres * 2 == info->var.yres_virtual)
+		buf_len = buf_len >> 1; 
+	else
+		pr_warn("HardkernelUMP: Double buffer disabled!\n");
+
+	ump_memory_description.addr = info->fix.smem_start + (buf_len * buf);
+	ump_memory_description.size = info->fix.smem_len;
+
+	if(buf > 0) {  
+		ump_memory_description.addr += (buf_len * (buf - 1));
+		ump_memory_description.size = buf_len;
+	}
+
+	ump_wrapped_buffer = ump_dd_handle_create_from_phys_blocks(&ump_memory_description, 1);
+
+	secure_id = ump_dd_secure_id_get(ump_wrapped_buffer);
+
+	return put_user((unsigned int)secure_id, psecureid);
+}
+
+static int exynos_drm_fb_ioctl(struct fb_info *info, unsigned int cmd,
+                        unsigned long arg)
+{
+        int ret;
+
+        switch (cmd) {
+        case GET_UMP_SECURE_ID_BUF1: {
+                pr_emerg("s3c-fb: GET_UMP_SECURE_ID_BUF1 called\n");
+                ret = show_ump_secure_id(info, arg, 0);
+                break;
+        }
+        case GET_UMP_SECURE_ID_BUF2: {
+                pr_emerg("s3c-fb: GET_UMP_SECURE_ID_BUF2 called\n");
+                ret = show_ump_secure_id(info, arg, 1);
+                break;
+        }
+        default:
+                ret = -ENOTTY;
+        }
+
+        return ret;
+}
+
+
+
 static struct fb_ops exynos_drm_fb_ops = {
 	.owner		= THIS_MODULE,
 	.fb_mmap        = exynos_drm_fb_mmap,
@@ -73,6 +132,7 @@ static struct fb_ops exynos_drm_fb_ops = {
 	.fb_blank	= drm_fb_helper_blank,
 	.fb_pan_display	= drm_fb_helper_pan_display,
 	.fb_setcmap	= drm_fb_helper_setcmap,
+	.fb_ioctl	= exynos_drm_fb_ioctl,
 };
 
 static int exynos_drm_fbdev_update(struct drm_fb_helper *helper,

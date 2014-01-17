@@ -19,21 +19,35 @@
 #define DRIVER_MINOR		1
 #define DRIVER_PATCHLEVEL	0
 
-#include "drm_sman.h"
+#include <drm/drm_mm.h>
 
 typedef struct drm_mali_private 
 {
 	drm_local_map_t *mmio;
 	unsigned int idle_fault;
-	struct drm_sman sman;
+	struct drm_mm vram_mm;
+	struct drm_mm mem_mm;
 	int vram_initialized;
+	int mem_initialized;
 	unsigned long vram_offset;
+	unsigned long mem_offset;
+	/** Mapping of userspace keys to mm objects */
+	struct idr object_idr;
 } drm_mali_private_t;
+
+
+
+int mali_drm_init(struct platform_device *dev);
+void mali_drm_exit(struct platform_device *dev);
 
 extern int mali_idle(struct drm_device *dev);
 extern void mali_reclaim_buffers_locked(struct drm_device *dev, struct drm_file *file_priv);
 extern void mali_lastclose(struct drm_device *dev);
-extern struct drm_ioctl_desc mali_ioctls[];
+extern const struct drm_ioctl_desc mali_ioctls[];
 extern int mali_max_ioctl;
+
+#define DRM_MEM_DRIVER 2
+#define DRM_IOCTL_DEF(ioctl, _func, _flags) \
+         [DRM_IOCTL_NR(ioctl)] = {.cmd = ioctl, .func = _func, .flags = _flags, .cmd_drv = 0}
 
 #endif /* _MALI_DRV_H_ */

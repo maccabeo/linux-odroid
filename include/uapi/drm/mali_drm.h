@@ -31,13 +31,17 @@
 typedef struct 
 {
 	int context;
-	unsigned int offset;
-	unsigned int size;
+	unsigned long offset;
+	unsigned long size;
 	unsigned long free;
 } drm_mali_mem_t;
 
 typedef struct {
-	unsigned int offset, size;
+	unsigned long offset, size;
 } drm_mali_fb_t;
+
+struct mali_file_private {
+	struct list_head obj_list;
+};
 
 #endif /* __MALI_DRM_H__ */
