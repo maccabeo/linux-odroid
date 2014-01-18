@@ -302,13 +302,6 @@
 		.end = pp_mmu_bcast_addr + 0x100, \
 	},
 
-struct mali_gpu_utilization_data
-{
-	unsigned int utilization_gpu; /* Utilization for GP and all PP cores combined, 0 = no utilization, 256 = full utilization */
-	unsigned int utilization_gp;  /* Utilization for GP core only, 0 = no utilization, 256 = full utilization */
-	unsigned int utilization_pp;  /* Utilization for all PP cores combined, 0 = no utilization, 256 = full utilization */
-};
-
 /** @brief resource description struct
  *
  * Platform independent representation of a Mali HW resource
@@ -352,6 +345,15 @@ enum mali_resource_index {
 	MALI_RESOURCE_INDEX_LAST,
 };
 
+
+struct mali_gpu_utilization_data
+{
+	unsigned int utilization_gpu; /* Utilization for GP and all PP cores combined, 0 = no utilization, 256 = full utilization */
+	unsigned int utilization_gp;  /* Utilization for GP core only, 0 = no utilization, 256 = full utilization */
+	unsigned int utilization_pp;  /* Utilization for all PP cores combined, 0 = no utilization, 256 = full utilization */
+};
+
+
 struct mali_gpu_device_data
 {
 	/* Dedicated GPU memory range (physical). */
@@ -370,6 +372,8 @@ struct mali_gpu_device_data
 
 	/* Function that will receive periodic GPU utilization numbers */
 	void (*utilization_callback)(struct mali_gpu_utilization_data *data);
+
+	struct mali_resource resources[MALI_RESOURCE_INDEX_LAST];
 };
 
 /** @brief MALI GPU power down using MALI in-built PMU

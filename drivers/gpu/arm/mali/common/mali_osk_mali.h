@@ -17,6 +17,7 @@
 #define __MALI_OSK_MALI_H__
 
 #include <mali_osk.h>
+#include <linux/mali/mali_utgard.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -46,6 +47,8 @@ struct _mali_osk_device_data
 
 	/* Function that will receive periodic GPU utilization numbers */
 	void (*utilization_callback)(struct mali_gpu_utilization_data *data);
+
+	struct mali_resource resource[MALI_RESOURCE_INDEX_LAST];
 };
 
 _mali_osk_errcode_t _mali_osk_resource_find_by_id(enum mali_resource_index, _mali_osk_resource_t *res);

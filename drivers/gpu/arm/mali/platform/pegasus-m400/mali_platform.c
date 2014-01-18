@@ -15,8 +15,10 @@
 #include <linux/version.h>
 #include "mali_kernel_common.h"
 #include "mali_osk.h"
-#include "mali_platform.h"
-//#include "mali_linux_pm.h"
+#include "../mali_platform.h"
+#include "mali_kernel_linux.h"
+#include "mali_pm.h"
+#include "mali_pmu.h"
 
 #ifdef USING_MALI_PMM
 #include "mali_pmm.h"
@@ -27,6 +29,10 @@
 #include <linux/platform_device.h>
 #include <linux/regulator/consumer.h>
 #include <linux/regulator/driver.h>
+#include <linux/pm.h>
+#ifdef CONFIG_PM_RUNTIME
+#include <linux/pm_runtime.h>
+#endif
 
 
 #include <asm/io.h>
@@ -370,7 +376,7 @@ mali_bool mali_clk_set_rate(unsigned int clk, unsigned int mhz)
 	return MALI_TRUE;
 }
 
-static mali_bool init_mali_clock(void)
+static mali_bool init_mali_clock(struct platform_device *pdev)
 {
 	mali_bool ret = MALI_TRUE;
 
@@ -395,7 +401,7 @@ static mali_bool init_mali_clock(void)
 
 #ifdef CONFIG_REGULATOR
 #ifdef USING_MALI_PMM
-	g3d_regulator = regulator_get(&mali_gpu_device.dev, "vdd_g3d");
+	g3d_regulator = regulator_get(&pdev.dev, "vdd_g3d");
 #else
 	g3d_regulator = regulator_get(NULL, "vdd_g3d");
 #endif

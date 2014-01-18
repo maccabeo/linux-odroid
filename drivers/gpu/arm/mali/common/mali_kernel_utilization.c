@@ -129,9 +129,9 @@ _mali_osk_errcode_t mali_utilization_init(void)
 		{
 			mali_utilization_timeout = data.utilization_interval;
 		}
-		if (NULL != data.utilization_handler)
+		if (NULL != data.utilization_callback)
 		{
-			mali_utilization_callback = data.utilization_handler;
+			mali_utilization_callback = data.utilization_callback;
 		}
 	}
 #endif

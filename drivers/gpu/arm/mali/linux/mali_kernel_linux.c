@@ -750,8 +750,8 @@ static struct _mali_osk_device_data *mali_parse_dt (struct platform_device *pdev
 		goto error_parse_dt;
 
 	os_data->shared_mem_size = tmp_size;
-	os_data->utilization_interval = tmp_interval;
-	os_data->utilization_callback = mali_gpu_utilization_callback;
+	//os_data->utilization_interval = tmp_interval;
+	//os_data->utilization_callback = mali_gpu_utilization_callback;
 
 	index = MALI_RESOURCE_INDEX_L2;
 	res_mem = platform_get_resource_byname (pdev, IORESOURCE_MEM, "l2");

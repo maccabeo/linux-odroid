@@ -435,7 +435,7 @@ static _mali_osk_errcode_t mali_parse_config_groups(void)
 		MALI_DEBUG_ASSERT(1 == mali_l2_cache_core_get_glob_num_l2_cores());
 
 		if (_MALI_OSK_ERR_OK != _mali_osk_resource_find_by_id(MALI_RESOURCE_INDEX_PMU, &resource_gp) ||
-		    _MALI_OSK_ERR_OK != _mali_osk_resource_find_by_id (MALI_RESOURCE_INDEX_GP, resource_pp) ||
+		    _MALI_OSK_ERR_OK != _mali_osk_resource_find_by_id (MALI_RESOURCE_INDEX_GP, &resource_pp) ||
 		    _MALI_OSK_ERR_OK != _mali_osk_resource_find_by_id (MALI_RESOURCE_INDEX_GP_MMU, &resource_mmu))
 		{
 			/* Missing mandatory core(s) */
