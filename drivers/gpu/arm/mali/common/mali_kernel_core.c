@@ -37,6 +37,7 @@
 #include "mali_profiling_internal.h"
 #endif
 #include <mach/mali_utgard.h>
+#include "../platform/mali_platform.h"
 
 /* Mali GPU memory. Real values come from module parameter or from device specific data */
 int mali_dedicated_mem_start = 0;

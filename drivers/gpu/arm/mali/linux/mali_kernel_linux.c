@@ -23,6 +23,7 @@
 #include <linux/platform_device.h>
 #include <linux/miscdevice.h>
 #include <linux/mali/mali_utgard.h>
+#include <linux/of.h>
 #include "mali_kernel_common.h"
 #include "mali_session.h"
 #include "mali_kernel_core.h"
@@ -34,6 +35,7 @@
 #include "mali_pm.h"
 #include "mali_kernel_license.h"
 #include "mali_dma_buf.h"
+#include "mali_osk_mali.h"
 #include "../../ump/common/ump_kernel_common.h"
 #if defined(CONFIG_MALI400_INTERNAL_PROFILING)
 #include "mali_profiling_internal.h"
@@ -45,6 +47,8 @@
 #define CREATE_TRACE_POINTS
 #include "mali_linux_trace.h"
 #endif /* CONFIG_TRACEPOINTS */
+
+#include "../platform/mali_platform.h"
 
 /* from the __malidrv_build_info.c file that is generated during build */
 extern const char *__malidrv_build_info(void);
@@ -434,7 +438,6 @@ static int mali_mmap(struct file * filp, struct vm_area_struct * vma)
 		MALI_DEBUG_PRINT(3,("Allocate - GP Cached - Size: %d kb\n", args.size/1024));
 	}
 	/* Setting it equal to VM_SHARED and not Private, which would have made the later io_remap fail for MALI_CACHE_GP_READ_ALLOCATE */
-static int mali_probe(struct platform_device *pdev);
 	vma->vm_flags = 0x000000fb;
 
 	/* Call the common mmap handler */
@@ -727,28 +730,30 @@ static int mali_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, 
 static struct _mali_osk_device_data *mali_parse_dt (struct platform_device *pdev)
 {
 	struct device_node *np = pdev->dev.of_node;
-	const char *tmp_str;
 	u32 tmp_interval, tmp_size;
+	struct _mali_osk_device_data* os_data = (struct _mali_osk_device_data*)mali_platform_data;
 
-	if (NULL != mali_platform_data)
-		return mali_platform_data;
+	if (NULL != os_data)
+		return os_data;
 
-	mali_platform_data = devm_kzalloc(&pdev->dev, sizeof(*ptrips), GFP_KERNEL);
-	if (!data)
+	os_data = devm_kzalloc(&pdev->dev, sizeof(struct _mali_osk_device_data), GFP_KERNEL);
+	if (!os_data)
 		return NULL;
 
-	if (of_property_read_u64(np, "utilization-interval", &tmp_interval))
+	if (of_property_read_u32(np, "utilization-interval", &tmp_interval))
 		goto error_parse_dt;
-	if (of_property_read_u64(np, "shared-memory-size", &tmp_size))
+	if (of_property_read_u32(np, "shared-memory-size", &tmp_size))
 		goto error_parse_dt;
 
-	mali_platform_data.shared_mem_size = tmp_size;
-	mali_platform_data.utilization_interval = tmp_interval;
-	mali_platform_data.utilization_callback = mali_gpu_utilization_handler;
+	os_data->shared_mem_size = tmp_size;
+	os_data->utilization_interval = tmp_interval;
+	os_data->utilization_callback = mali_gpu_utilization_callback;
 
-        return mali_platform_data;
+	mali_platform_data = os_data;
 
-err_parse_dt:
+        return os_data;
+
+error_parse_dt:
 	dev_err(&pdev->dev, "Parsing device tree data error.\n");
 	return NULL;
 }
