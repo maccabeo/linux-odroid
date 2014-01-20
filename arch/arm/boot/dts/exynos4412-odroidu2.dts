@@ -89,7 +89,7 @@
 	};
 
 	chosen {
-                bootargs = "dynamic_debug.verbose=1 no_console_suspend console=ttySAC1,115200n8 console=tty0 earlyprintk smsc95xx.macaddr=\"F2:04:5F:B8:D6:6C\"  max77686_irq.debug_mask=7 dyndbg=\"module dw_mmc +p;module pwm_samsung +p;module pwm_bl +p;module backlight +p;file gpiolib-of.c +p;module domain_governor +p;module domain +p;module pm_domains +p;module max77686 +p;module clk +p;module snd_soc_i2s +p;\"";       };
+                bootargs = "dynamic_debug.verbose=1 no_console_suspend console=ttySAC1,115200n8 console=tty0 earlyprintk smsc95xx.macaddr=\"F2:04:5F:B8:D6:6C\"  max77686_irq.debug_mask=7 dyndbg=\"module dw_mmc +p;module pwm_samsung +p;module pwm_bl +p;module backlight +p;file gpiolib-of.c +p;module domain_governor +p;module domain +p;module max77686 +p;module clk +p;module snd_soc_i2s +p;\"";       };
 
 	firmware@0203F000 {
 		compatible = "samsung,secure-firmware";
