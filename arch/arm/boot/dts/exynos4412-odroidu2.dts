@@ -176,7 +176,7 @@
 	};
 
 
-	mshc@12550000 {
+	mmc@12550000 {
 		pinctrl-0 = <&sd4_clk &sd4_cmd &sd4_bus4 &sd4_bus8 &sd4_nreset_out>;
 		pinctrl-names = "default";
 		vmmc-supply = <&ldo20_reg &ldo22_reg>;
@@ -186,16 +186,12 @@
 		supports-highspeed;
 		broken-cd;
 		keep-power-in-suspend;
-		fifo-depth = <0x80>;
 		card-detect-delay = <200>;
 		samsung,dw-mshc-ciu-div = <3>;
 		samsung,dw-mshc-sdr-timing = <1 1>;
 		samsung,dw-mshc-ddr-timing = <2 1>;
 		samsung,dw-mshc-hwreset-gpio = <&gpk1 2 1>;
 
-
-		clocks = <&clock 301>, <&clock 149>;
-		clock-names = "biu", "ciu";
 
 		slot@0 {
 			reg = <0>;
