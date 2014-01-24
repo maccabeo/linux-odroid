@@ -22,7 +22,6 @@
 #include <sound/pcm.h>
 #include <sound/pcm_params.h>
 
-#include <mach/regs-clock.h>
 
 #include "../codecs/max98090.h"
 #include "i2s.h"
