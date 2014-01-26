@@ -216,6 +216,7 @@
 #define CLK_SPI1_ISP_SCLK	381 /* Exynos4x12 only */
 #define CLK_UART_ISP_SCLK	382 /* Exynos4x12 only */
 #define CLK_TMU_APBIF		383
+#define CLK_SSS			397
 
 /* mux clocks */
 #define CLK_MOUT_FIMC0		384

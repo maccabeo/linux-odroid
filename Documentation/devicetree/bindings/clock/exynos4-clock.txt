@@ -238,6 +238,7 @@ Exynos4 SoC and this is specified where applicable.
   spi1_isp_sclk       381     Exynos4x12
   uart_isp_sclk       382     Exynos4x12
   tmu_apbif           383
+  secss               397
 
 		[Mux Clocks]
 
