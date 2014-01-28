@@ -105,9 +105,8 @@ static int exynos_read(struct hwrng *rng, void *buf,
 
 static int exynos_rng_probe(struct platform_device *pdev)
 {
-        struct device *dev = &pdev->dev;
-        struct device_node *np = dev->of_node;
 	struct exynos_rng *exynos_rng;
+	struct resource *res;
 
 	exynos_rng = devm_kzalloc(&pdev->dev, sizeof(struct exynos_rng),
 					GFP_KERNEL);
@@ -127,7 +126,9 @@ printk(KERN_INFO "Exynos RNG detection: allocate ok\n");
 	}
 printk(KERN_INFO "Exynos RNG detection : clock ok\n");
 
-	exynos_rng->mem = of_iomap(np, 0);
+	
+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+	exynos_rng->mem = devm_ioremap_resource(&pdev->dev, res);
 	if (IS_ERR(exynos_rng->mem))
 		return PTR_ERR(exynos_rng->mem);
 printk(KERN_INFO "Exynos RNG detection : mem ok\n");

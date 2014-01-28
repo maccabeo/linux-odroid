@@ -212,7 +212,9 @@
 
 	rng {
 		compatible = "samsung,exynos-rng";
-		reg = <0x7e104000 0x10>;
+		reg = <0x10836000 0x1000>;
+		clocks = <&clock 397>;
+		clock-names = "secss";
 	};
 
 
