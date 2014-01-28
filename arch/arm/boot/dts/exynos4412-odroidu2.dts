@@ -457,7 +457,6 @@
 		clock-names = "mixer", "sclk_hdmi",
 			"vp", "sclk_mixer", "sclk_dac";
 		samsung,power-domain = <&pd_tv>;
-		iommu = <&sysmmu_tv>;
 	};
 
         hdmi {
