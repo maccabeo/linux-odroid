@@ -43,41 +43,17 @@
 			#address-cells = <1>;
 			#size-cells = <1>;
 
-			/*
-			 * global autoconfigured region for contiguous allocations
-			 * (used only with Contiguous Memory Allocator)
-			 */
-			contig_region@0 {
-				compatible = "linux,contiguous-memory-region";
-				reg = <0x0 0x8000000>;
-				linux,default-contiguous-region;
-			};
-
-
-                        /*
-                         * special region for framebuffer
-                         */
-                        display_region: region@78000000 {
-                                compatible = "linux,contiguous-memory-region", "reserved-memory-region";
-                                reg = <0x78000000 0x800000>;
-                        };
-
 			mfc_l_mem: mfc_l_region@43000000 {
 				compatible = "contiguous-memory-region", "reserved-memory-region";
-				reg = <0x43000000 0x4000000>;
+				reg = <0x43000000 0x1000000>;
 			};
 
 			mfc_r_mem: mfc_r_region@51000000 {
 				compatible = "contiguous-memory-region", "reserved-memory-region";
-				reg = <0x51000000 0x4000000>;
+				reg = <0x51000000 0x1000000>;
 			};
 		};
 	};
-
-        fb0: fb@12300000 {
-                status = "okay";
-                memory-region = <&display_region>;
-        };
 
 	L2: l2-cache@10502000 {
 		compatible = "arm,pl310-cache";
@@ -89,7 +65,7 @@
 	};
 
 	chosen {
-                bootargs = "dynamic_debug.verbose=1 no_console_suspend console=ttySAC1,115200n8 console=tty0 earlyprintk smsc95xx.macaddr=\"F2:04:5F:B8:D6:6C\"  max77686_irq.debug_mask=7 dyndbg=\"module dw_mmc +p;module pwm_samsung +p;module pwm_bl +p;module backlight +p;file gpiolib-of.c +p;module domain_governor +p;module domain +p;module max77686 +p;module clk +p;module snd_soc_i2s +p;\"";       };
+                bootargs = "dynamic_debug.verbose=1 no_console_suspend console=ttySAC1,115200n8 console=tty0 earlyprintk smsc95xx.macaddr=\"F2:04:5F:B8:D6:6C\"  max77686_irq.debug_mask=7 dyndbg=\"module dw_mmc +p;module pwm_samsung +p;module pwm_bl +p;module backlight +p;file gpiolib-of.c +p;module domain_governor +p;module domain +p;module max77686 +p;module clk +p;module snd_soc_i2s +p;module s5p_mfc +p;\"";       };
 
 	firmware@0203F000 {
 		compatible = "samsung,secure-firmware";
