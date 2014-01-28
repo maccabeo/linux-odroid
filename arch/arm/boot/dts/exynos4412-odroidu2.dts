@@ -593,6 +593,7 @@
 			reg = <0x09>;
 			pinctrl-0 = <&eint26>;
 			pinctrl-names = "default";
+			#clock-cells = <1>;
 
 			voltage-regulators {
 				ldo1_reg: LDO1 {
