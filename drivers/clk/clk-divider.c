@@ -89,6 +89,8 @@ static unsigned int _get_table_val(const struct clk_div_table *table,
 
 static unsigned int _get_val(struct clk_divider *divider, unsigned int div)
 {
+	if (!div)
+		div = 1;
 	if (divider->flags & CLK_DIVIDER_ONE_BASED)
 		return div;
 	if (divider->flags & CLK_DIVIDER_POWER_OF_TWO)

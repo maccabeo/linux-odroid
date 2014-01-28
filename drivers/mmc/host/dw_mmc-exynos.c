@@ -121,7 +121,7 @@ static int dw_mci_exynos_setup_clock(struct dw_mci *host)
 	struct dw_mci_exynos_priv_data *priv = host->priv;
 	unsigned long rate = clk_get_rate(host->ciu_clk);
 
-	host->bus_hz = rate / (priv->ciu_div + 1);
+	host->bus_hz = rate;
 	return 0;
 }
 
@@ -213,7 +213,7 @@ static void dw_mci_exynos_set_ios(struct dw_mci *host, struct mmc_ios *ios)
 				"failed to set clk-rate %u error: %d\n",
 				 wanted * div, ret);
 		actual = clk_get_rate(host->ciu_clk);
-		host->bus_hz = actual / div;
+		host->bus_hz = actual;
 		priv->cur_speed = wanted;
 		host->current_speed = 0;
 	}

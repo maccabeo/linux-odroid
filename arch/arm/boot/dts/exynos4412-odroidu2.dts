@@ -145,12 +145,12 @@
 
 	fixed-rate-clocks {
 		xxti {
-			compatible = "samsung,clock-xxti";
+			compatible = "samsung,clock-xxti", "fixed-clock";
 			clock-frequency = <0>;
 		};
 
 		xusbxti {
-			compatible = "samsung,clock-xusbxti";
+			compatible = "samsung,clock-xusbxti", "fixed-clock";
 			clock-frequency = <24000000>;
 		};
 
@@ -185,6 +185,7 @@
 		num-slots = <1>;
 		supports-highspeed;
 		broken-cd;
+		clock-frequency = <440000000>;
 		keep-power-in-suspend;
 		non-removable;
 		card-detect-delay = <200>;
