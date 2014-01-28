@@ -31,10 +31,12 @@
 		mshc0 = &mshc_0;
 	};
 
+/*
 	pd_isp: isp-power-domain@10023CA0 {
 		compatible = "samsung,exynos4210-pd";
 		reg = <0x10023CA0 0x20>;
 	};
+*/
 
 	clock: clock-controller@10030000 {
 		compatible = "samsung,exynos4412-clock";
@@ -144,7 +146,9 @@
 			compatible = "samsung,exynos4212-fimc-lite";
 			reg = <0x12390000 0x1000>;
 			interrupts = <0 105 0>;
+/*
 			samsung,power-domain = <&pd_isp>;
+*/
 			clocks = <&clock 353>;
 			clock-names = "flite";
 			status = "disabled";
@@ -154,7 +158,9 @@
 			compatible = "samsung,exynos4212-fimc-lite";
 			reg = <0x123A0000 0x1000>;
 			interrupts = <0 106 0>;
+/*
 			samsung,power-domain = <&pd_isp>;
+*/
 			clocks = <&clock 354>;
 			clock-names = "flite";
 			status = "disabled";
@@ -164,7 +170,9 @@
 			compatible = "samsung,exynos4212-fimc-is", "simple-bus";
 			reg = <0x12000000 0x260000>;
 			interrupts = <0 90 0>, <0 95 0>;
+/*
 			samsung,power-domain = <&pd_isp>;
+*/
 			clocks = <&clock 353>, <&clock 354>, <&clock 355>,
 				<&clock 356>, <&clock 17>, <&clock 357>,
 				<&clock 358>, <&clock 359>, <&clock 360>,
