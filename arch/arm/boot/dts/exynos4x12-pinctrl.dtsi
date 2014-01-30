@@ -791,13 +791,6 @@
 			samsung,pin-drv = <3>;
 		};
 
-		sd4_nreset_out: sd4-nreset-out {
-			samsung,pins = "gpk1-2";
-			samsung,pin-function = <4>;
-			samsung,pin-pud = <0>;
-			samsung,pin-drv = <0>;
-		};
-
 		cam_port_b_io: cam-port-b-io {
 			samsung,pins = "gpm0-0", "gpm0-1", "gpm0-2", "gpm0-3",
 					"gpm0-4", "gpm0-5", "gpm0-6", "gpm0-7",
