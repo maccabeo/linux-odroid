@@ -69,6 +69,7 @@
 
 	watchdog@10060000 {
 		status = "okay";
+		timeout-sec = <6>;
 	};
 
 	mali@13000000 {
@@ -211,8 +212,8 @@
 	codec@13400000 {
 		status = "okay";
 
-		samsung,mfc-r = <0x43000000 0x800000>;
-		samsung,mfc-l = <0x51000000 0x800000>;
+		samsung,mfc-r = <0x43000000 0x1000000>;
+		samsung,mfc-l = <0x51000000 0x1000000>;
 
 	};
 
