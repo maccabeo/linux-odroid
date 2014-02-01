@@ -46,7 +46,7 @@ struct _mali_osk_device_data
 	u32 utilization_interval;
 
 	/* Function that will receive periodic GPU utilization numbers */
-	void (*utilization_callback)(struct mali_gpu_utilization_data *data);
+	void (*utilization_callback)(unsigned int data);
 
 	struct mali_resource resource[MALI_RESOURCE_INDEX_LAST];
 };

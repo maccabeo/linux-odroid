@@ -346,13 +346,6 @@ enum mali_resource_index {
 };
 
 
-struct mali_gpu_utilization_data
-{
-	unsigned int utilization_gpu; /* Utilization for GP and all PP cores combined, 0 = no utilization, 256 = full utilization */
-	unsigned int utilization_gp;  /* Utilization for GP core only, 0 = no utilization, 256 = full utilization */
-	unsigned int utilization_pp;  /* Utilization for all PP cores combined, 0 = no utilization, 256 = full utilization */
-};
-
 
 struct mali_gpu_device_data
 {
@@ -371,7 +364,7 @@ struct mali_gpu_device_data
 	unsigned long utilization_interval;
 
 	/* Function that will receive periodic GPU utilization numbers */
-	void (*utilization_callback)(struct mali_gpu_utilization_data *data);
+	void (*utilization_callback)(unsigned int data);
 
 	struct mali_resource resources[MALI_RESOURCE_INDEX_LAST];
 };
