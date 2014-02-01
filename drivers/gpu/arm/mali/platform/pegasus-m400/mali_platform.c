@@ -36,7 +36,6 @@
 
 
 #include <asm/io.h>
-#include <mach/regs-pmu.h>
 
 #define EXTXTALCLK_NAME 	"xxti"
 #define VPLLSRCCLK_NAME 	"vpll_src"
