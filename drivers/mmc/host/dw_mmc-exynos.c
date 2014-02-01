@@ -20,8 +20,6 @@
 #include <linux/slab.h>
 #include <linux/delay.h>
 
-#include <mach/regs-pmu.h>
-
 #include "dw_mmc.h"
 #include "dw_mmc-pltfm.h"
 
