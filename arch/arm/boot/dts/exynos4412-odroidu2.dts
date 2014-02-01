@@ -40,20 +40,6 @@
 	memory {
 		reg = <0x40000000 0x80000000>;
 
-		reserved-memory {
-			#address-cells = <1>;
-			#size-cells = <1>;
-
-			mfc_l_mem: mfc_l_region@43000000 {
-				compatible = "contiguous-memory-region", "reserved-memory-region";
-				reg = <0x43000000 0x1000000>;
-			};
-
-			mfc_r_mem: mfc_r_region@51000000 {
-				compatible = "contiguous-memory-region", "reserved-memory-region";
-				reg = <0x51000000 0x1000000>;
-			};
-		};
 	};
 
 	L2: l2-cache@10502000 {
@@ -222,17 +208,12 @@
                 pinctrl-0 = <&pwm1_out>;
                 pinctrl-names = "default";
         };
-
 	codec@13400000 {
 		status = "okay";
 
-		memport-r {
-			dma-memory-region = <&mfc_r_mem>;
-		};
+		samsung,mfc-r = <0x43000000 0x800000>;
+		samsung,mfc-l = <0x51000000 0x800000>;
 
-		memport-l {
-			dma-memory-region = <&mfc_l_mem>;
-		};
 	};
 
 
@@ -900,5 +881,37 @@
 				};
 			};
 		};
+	};
+
+	camera {
+		pinctrl-0 = <&cam_port_b_clk_active>;
+		pinctrl-names = "default";
+		status = "okay";
+
+		fimc_0: fimc@11800000 {
+			status = "okay";
+		};
+
+		fimc_1: fimc@11810000 {
+			status = "okay";
+		};
+
+		fimc_2: fimc@11820000 {
+			status = "okay";
+		};
+
+		fimc_3: fimc@11830000 {
+			status = "okay";
+		};
+
+/*
+		fimc_lite_0: fimc-lite@12390000 {
+			status = "okay";
+		};
+
+		fimc_lite_1: fimc-lite@123A0000 {
+			status = "okay";
+		};
+*/
 	};
 };
