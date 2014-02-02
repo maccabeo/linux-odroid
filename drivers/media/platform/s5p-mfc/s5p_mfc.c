@@ -291,7 +291,6 @@ static void s5p_mfc_handle_frame_new(struct s5p_mfc_ctx *ctx, unsigned int err)
 			clear_bit(dst_buf->b->v4l2_buf.index,
 							&ctx->dec_dst_flag);
 
-			mfc_debug(1, "err ? (%d) if so VB2_BUF_STATE_ERROR else VB2_BUF_STATE_DONE\n", err);
 			vb2_buffer_done(dst_buf->b,
 				err ? VB2_BUF_STATE_ERROR : VB2_BUF_STATE_DONE);
 
@@ -375,10 +374,9 @@ static void s5p_mfc_handle_frame(struct s5p_mfc_ctx *ctx,
 				ctx->state = MFCINST_FINISHING;
 			list_del(&src_buf->list);
 			ctx->src_queue_cnt--;
-			if (s5p_mfc_hw_call(dev->mfc_ops, err_dec, err) > 0) {
-			mfc_debug(1, "iset VB2_BUF_STATE_ERROR\n");
+			if (s5p_mfc_hw_call(dev->mfc_ops, err_dec, err) > 0)
 				vb2_buffer_done(src_buf->b, VB2_BUF_STATE_ERROR);
-			}else
+			else
 				vb2_buffer_done(src_buf->b, VB2_BUF_STATE_DONE);
 		}
 	}
@@ -392,7 +390,11 @@ leave_handle_frame:
 	if (test_and_clear_bit(0, &dev->hw_lock) == 0)
 		BUG();
 	s5p_mfc_clock_off();
-	s5p_mfc_hw_call(dev->mfc_ops, try_run, dev);
+	/* if suspending, wake up device and do not try_run again*/
+	if (test_bit(0, &dev->enter_suspend))
+		wake_up_dev(dev, reason, err);
+	else
+		s5p_mfc_hw_call(dev->mfc_ops, try_run, dev);
 }
 
 /* Error handling for interrupt */
@@ -1275,9 +1277,7 @@ static int s5p_mfc_suspend(struct device *dev)
 		/* Try and lock the HW */
 		/* Wait on the interrupt waitqueue */
 		ret = wait_event_interruptible_timeout(m_dev->queue,
-			m_dev->int_cond || m_dev->ctx[m_dev->curr_ctx]->int_cond,
-			msecs_to_jiffies(MFC_INT_TIMEOUT));
-
+			m_dev->int_cond, msecs_to_jiffies(MFC_INT_TIMEOUT));
 		if (ret == 0) {
 			mfc_err("Waiting for hardware to finish timed out\n");
 			return -EIO;
