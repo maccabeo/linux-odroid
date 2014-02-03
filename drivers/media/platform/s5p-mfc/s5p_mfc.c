@@ -1007,9 +1007,19 @@ static int match_child(struct device *dev, void *data)
 
 static void *mfc_get_drv_data(struct platform_device *pdev);
 
+
+
+static void release_mfc_mem_device(struct device *dev)
+{
+	dma_release_declared_memory(dev);
+}
+
+
+
 static int s5p_mfc_alloc_memdevs(struct s5p_mfc_dev *dev)
 {
 	unsigned int mem_info[2] = { };
+	int err;
 
 	dev->mem_dev_l = devm_kzalloc(&dev->plat_dev->dev,
 			sizeof(struct device), GFP_KERNEL);
@@ -1017,7 +1027,14 @@ static int s5p_mfc_alloc_memdevs(struct s5p_mfc_dev *dev)
 		mfc_err("Not enough memory\n");
 		return -ENOMEM;
 	}
-	device_initialize(dev->mem_dev_l);
+        dev->mem_dev_l->parent  = &dev->plat_dev->dev;
+        dev->mem_dev_l->release = release_mfc_mem_device;
+        dev_set_name(dev->mem_dev_l, "s5p-mfc-l");
+        err = device_register(dev->mem_dev_l);
+        if (0 != err) {
+		mfc_err("Failed to register MFC device l mem\n");
+                return err;
+        }
 	of_property_read_u32_array(dev->plat_dev->dev.of_node,
 			"samsung,mfc-l", mem_info, 2);
 	if (dma_declare_coherent_memory(dev->mem_dev_l, mem_info[0],
@@ -1034,7 +1051,14 @@ static int s5p_mfc_alloc_memdevs(struct s5p_mfc_dev *dev)
 		mfc_err("Not enough memory\n");
 		return -ENOMEM;
 	}
-	device_initialize(dev->mem_dev_r);
+        dev->mem_dev_r->parent  = &dev->plat_dev->dev;
+        dev->mem_dev_r->release = release_mfc_mem_device;
+        dev_set_name(dev->mem_dev_r, "s5p-mfc-r");
+        err = device_register(dev->mem_dev_r);
+        if (0 != err) {
+		mfc_err("Failed to register MFC device r mem\n");
+                return err;
+        }
 	of_property_read_u32_array(dev->plat_dev->dev.of_node,
 			"samsung,mfc-r", mem_info, 2);
 	if (dma_declare_coherent_memory(dev->mem_dev_r, mem_info[0],
@@ -1248,8 +1272,8 @@ static int s5p_mfc_remove(struct platform_device *pdev)
 	vb2_dma_contig_cleanup_ctx(dev->alloc_ctx[0]);
 	vb2_dma_contig_cleanup_ctx(dev->alloc_ctx[1]);
 	if (pdev->dev.of_node) {
-		put_device(dev->mem_dev_l);
-		put_device(dev->mem_dev_r);
+		device_unregister(dev->mem_dev_l);
+		device_unregister(dev->mem_dev_r);
 	}
 
 	s5p_mfc_final_pm(dev);
