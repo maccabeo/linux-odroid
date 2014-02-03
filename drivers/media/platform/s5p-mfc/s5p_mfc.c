@@ -264,10 +264,12 @@ static void s5p_mfc_handle_frame_new(struct s5p_mfc_ctx *ctx, unsigned int err)
 	/* If frame is same as previous then skip and do not dequeue */
 	if (frame_type == S5P_FIMV_DECODE_FRAME_SKIPPED) {
 		mfc_debug(1, "frame is same as previous then skip and do not dequeue\n");
+#if 0
 		if (!ctx->after_packed_pb)
 			ctx->sequence++;
 		ctx->after_packed_pb = 0;
 		return;
+#endif
 	}
 	ctx->sequence++;
 	/* The MFC returns address of the buffer, now we have to
