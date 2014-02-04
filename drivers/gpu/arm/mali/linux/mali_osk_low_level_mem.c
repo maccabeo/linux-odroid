@@ -126,6 +126,7 @@ static unsigned long mali_mem_shrink_scan(struct shrinker *shrinker, struct shri
 
 	unsigned long freed = 0;
 
+
 	if (0 == pre_allocated_memory_size_current)
 	{
 		/* No pages availble */
@@ -135,7 +136,7 @@ static unsigned long mali_mem_shrink_scan(struct shrinker *shrinker, struct shri
 	if (0 == spin_trylock_irqsave(&allocation_list_spinlock, flags))
 	{
 		/* Not able to lock. */
-		return -1;
+		return SHRINK_STOP;
 	}
 
 	while (pre_allocated_memory && nr > 0)
@@ -159,7 +160,20 @@ static unsigned long
 mali_mem_shrink_count(struct shrinker *shrink, struct shrink_control *sc)
 
 {
-       return pre_allocated_memory_size_current / PAGE_SIZE;
+	unsigned long flags;
+	unsigned long count;
+
+	if (0 == spin_trylock_irqsave(&allocation_list_spinlock, flags))
+	{
+		/* Not able to lock. */
+		return 0;
+	}
+
+	count = pre_allocated_memory_size_current / PAGE_SIZE;
+
+	spin_unlock_irqrestore(&allocation_list_spinlock,flags);
+
+	return count;
 }
 
 
