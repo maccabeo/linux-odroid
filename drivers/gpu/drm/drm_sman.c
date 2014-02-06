@@ -87,20 +87,32 @@ static void *drm_sman_mm_allocate(void *private, unsigned long size,
 {
 	struct drm_mm *mm = (struct drm_mm *) private;
 	struct drm_mm_node *tmp;
+	int ret;
 
-	tmp = drm_mm_search_free(mm, size, alignment, 1);
+	tmp = kzalloc(sizeof(*tmp), GFP_KERNEL);
+	//tmp = drm_mm_search_free(mm, size, alignment, 1);
 	if (!tmp) {
 		return NULL;
 	}
-	tmp = drm_mm_get_block(tmp, size, alignment);
+	ret = drm_mm_insert_node(mm, tmp,
+				 size, alignment, DRM_MM_SEARCH_DEFAULT);
+	if (ret)
+		goto err;
+
 	return tmp;
+
+err:
+	kfree(tmp);
+	return NULL;
 }
 
 static void drm_sman_mm_free(void *private, void *ref)
 {
 	struct drm_mm_node *node = (struct drm_mm_node *) ref;
 
-	drm_mm_put_block(node);
+	drm_mm_remove_node(node);
+	kfree(node);
+
 }
 
 static void drm_sman_mm_destroy(void *private)
@@ -122,7 +134,6 @@ drm_sman_set_range(struct drm_sman * sman, unsigned int manager,
 {
 	struct drm_sman_mm *sman_mm;
 	struct drm_mm *mm;
-	int ret;
 
 	BUG_ON(manager >= sman->num_managers);
 
@@ -132,12 +143,7 @@ drm_sman_set_range(struct drm_sman * sman, unsigned int manager,
 		return -ENOMEM;
 	}
 	sman_mm->private = mm;
-	ret = drm_mm_init(mm, start, size);
-
-	if (ret) {
-		kfree(mm);
-		return ret;
-	}
+	drm_mm_init(mm, start, size);
 
 	sman_mm->allocate = drm_sman_mm_allocate;
 	sman_mm->free = drm_sman_mm_free;
