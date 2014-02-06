@@ -74,7 +74,7 @@ static unsigned int GPU_MHZ	= 1000000;
 /* Please take special care lowering these values, specially the voltage
  * as it can cause system stability problems: random oops, usb hub resets */
 int mali_gpu_clk = 533; /* 533 MHz */
-int mali_gpu_vol = 1125000;/* 1.1125 V */
+int mali_gpu_vol = 1125000;/* 1.125 V */
 
 #ifdef CONFIG_MALI_DVFS
 #define MALI_DVFS_DEFAULT_STEP 0
