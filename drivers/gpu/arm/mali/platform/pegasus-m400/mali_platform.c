@@ -41,6 +41,8 @@
 #define VPLLSRCCLK_NAME 	"vpll_src"
 #define FOUTVPLLCLK_NAME	"fout_vpll"
 #define SCLVPLLCLK_NAME 	"sclk_vpll"
+#define GPUMOUTCLK_NAME		"mout_g3d"
+#define GPUDIVCLK_NAME		"div_g3d"
 #define GPUMOUT1CLK_NAME	"mout_g3d1"
 
 #define MPLLCLK_NAME 		"mout_mpll_user_t"
@@ -63,6 +65,7 @@ static struct clk  *sclk_vpll_clock = 0;
 
 static struct clk  *mpll_clock = 0;
 static struct clk  *mali_parent_clock = 0;
+static struct clk  *mali_mout_clock = 0;
 static struct clk  *mali_clock = 0;
 
 
@@ -227,6 +230,16 @@ mali_bool mali_clk_get(mali_bool bis_vpll)
 				return MALI_FALSE;
 			}
 		}
+
+		if (mali_mout_clock == NULL)
+		{
+			mali_mout_clock = clk_get(dev, GPUMOUTCLK_NAME);
+
+			if (IS_ERR(mali_mout_clock)) {
+				MALI_PRINT( ( "MALI Error : failed to get source mali mout clock\n"));
+				return MALI_FALSE;
+			}
+		}
 	}
 	else // mpll
 	{
@@ -267,6 +280,12 @@ mali_bool mali_clk_get(mali_bool bis_vpll)
 
 void mali_clk_put(mali_bool binc_mali_clock)
 {
+	if (mali_mout_clock)
+	{
+		clk_put(mali_mout_clock);
+		mali_mout_clock = 0;
+	}
+
 	if (mali_parent_clock)
 	{
 		clk_put(mali_parent_clock);
@@ -343,7 +362,9 @@ mali_bool mali_clk_set_rate(unsigned int clk, unsigned int mhz)
 		clk_set_parent(sclk_vpll_clock, fout_vpll_clock);
 
 		clk_set_parent(mali_parent_clock, sclk_vpll_clock);
-		clk_set_parent(mali_clock, mali_parent_clock);
+		clk_set_parent(mali_mout_clock, mali_parent_clock);
+		/* FIXME: mali_clock is always child of div_g3d which is
+		 * always child of mout_g3d: enforce this here when time permits */
 	}
 	else
 	{
