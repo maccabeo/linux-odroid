@@ -36,10 +36,6 @@ typedef struct drm_mali_private
 } drm_mali_private_t;
 
 
-
-int mali_drm_init(struct platform_device *dev);
-void mali_drm_exit(struct platform_device *dev);
-
 extern int mali_idle(struct drm_device *dev);
 extern void mali_reclaim_buffers_locked(struct drm_device *dev, struct drm_file *file_priv);
 extern void mali_lastclose(struct drm_device *dev);

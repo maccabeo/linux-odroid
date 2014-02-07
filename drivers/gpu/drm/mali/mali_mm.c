@@ -263,7 +263,7 @@ const struct drm_ioctl_desc mali_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_MALI_MEM_INIT, mali_ioctl_mem_init, DRM_AUTH | DRM_MASTER | DRM_ROOT_ONLY),
 	DRM_IOCTL_DEF(DRM_MALI_MEM_ALLOC, mali_ioctl_mem_alloc, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_MALI_MEM_FREE, mali_drm_free, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_MALI_FB_INIT, mali_fb_init, DRM_AUTH | DRM_MASTER | DRM_ROOT_ONLY)
+	DRM_IOCTL_DEF(DRM_MALI_FB_INIT, mali_fb_init, DRM_AUTH | DRM_MASTER | DRM_ROOT_ONLY),
 };
 
 int mali_max_ioctl = DRM_ARRAY_SIZE(mali_ioctls);
