@@ -37,7 +37,7 @@ typedef struct drm_mali_private
 
 
 extern int mali_idle(struct drm_device *dev);
-extern void mali_reclaim_buffers_locked(struct drm_device *dev, struct drm_file *file_priv);
+extern void mali_reclaim_buffers(struct drm_device *dev, struct drm_file *file_priv);
 extern void mali_lastclose(struct drm_device *dev);
 extern const struct drm_ioctl_desc mali_ioctls[];
 extern int mali_max_ioctl;

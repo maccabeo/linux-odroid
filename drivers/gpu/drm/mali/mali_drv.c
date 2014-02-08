@@ -16,19 +16,13 @@
 #include "mali_drv.h"
 
 static struct platform_device *mali_drm_pdev;
-#if 0
-static const struct drm_device_id dock_device_ids[] = {
-	{"MALIDRM", 0},
-	{"", 0},
-};
-#endif
 
 static int mali_driver_load(struct drm_device *dev, unsigned long chipset)
 {
 	drm_mali_private_t *dev_priv;
 	printk(KERN_ERR "DRM: mali_driver_load start\n");
 
-	dev_priv = kmalloc(sizeof(drm_mali_private_t), GFP_KERNEL);
+	dev_priv = kzalloc(sizeof(drm_mali_private_t), GFP_KERNEL);
 	if (dev_priv == NULL)
 	       	return -ENOMEM;
 
@@ -82,6 +76,20 @@ static int mali_driver_open(struct drm_device *dev, struct drm_file *file)
 	return 0;
 }
 
+void mali_driver_preclose(struct drm_device *dev, struct drm_file *file_priv)
+{
+	if (file_priv->master && file_priv->master->lock.hw_lock) {
+		 drm_idlelock_take(&file_priv->master->lock);
+		 mali_reclaim_buffers(dev, file_priv);
+		 drm_idlelock_release(&file_priv->master->lock);
+	} else {
+		printk(KERN_ERR "DRM: %s : no master lock\n", __func__);
+		/* master disappeared, clean up stuff anyway and hope nothing
+		 * goes wrong */
+		 mali_reclaim_buffers(dev, file_priv);
+	}
+}
+
 void mali_driver_postclose(struct drm_device *dev, struct drm_file *file)
 {
 	struct via_file_private *file_priv = file->driver_priv;
@@ -97,7 +105,7 @@ static struct drm_driver mali_drm_driver =
 	.load = mali_driver_load,
 	.unload = mali_driver_unload,
 	.open = mali_driver_open,
-	.preclose = mali_reclaim_buffers_locked,
+	.preclose = mali_driver_preclose,
 	.postclose = mali_driver_postclose,
 	.dma_quiescent = mali_idle,
 	.lastclose = mali_lastclose,

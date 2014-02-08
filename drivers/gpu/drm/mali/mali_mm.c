@@ -173,22 +173,6 @@ static int mali_ioctl_mem_alloc(struct drm_device *dev, void *data,
 	return mali_drm_alloc(dev, file_priv, data, MEM_TYPE);
 }
 
-static drm_local_map_t *mali_reg_init(struct drm_device *dev)
-{
-	struct drm_map_list *entry;
-	drm_local_map_t *map;
-
-	list_for_each_entry(entry, &dev->maplist, head) {
-		map = entry->map;
-		if (!map)
-			continue;
-		if (map->type == _DRM_REGISTERS) {
-			return map;
-		}
-	}
-	return NULL;
-}
-
 int mali_idle(struct drm_device *dev)
 {
 	drm_mali_private_t *dev_priv = dev->dev_private;
@@ -203,9 +187,10 @@ int mali_idle(struct drm_device *dev)
 void mali_lastclose(struct drm_device *dev)
 {
 	drm_mali_private_t *dev_priv = dev->dev_private;
-	printk(KERN_ERR "DRM: %s\n", __func__);
 
-	if (!dev_priv) return;
+	printk(KERN_ERR "DRM: %s\n", __func__);
+	if (!dev_priv)
+	       return;
 
 	mutex_lock(&dev->struct_mutex);
 	if (dev_priv->vram_initialized) {
@@ -220,22 +205,17 @@ void mali_lastclose(struct drm_device *dev)
 	mutex_unlock(&dev->struct_mutex);
 }
 
-void mali_reclaim_buffers_locked(struct drm_device * dev, struct drm_file *file)
+void mali_reclaim_buffers(struct drm_device * dev, struct drm_file *file)
 {
 	struct mali_file_private *file_priv = file->driver_priv;
 	struct mali_memblock *entry, *next;
 	printk(KERN_ERR "DRM: %s\n", __func__);
 
-	if (!(file->minor->master && file->master->lock.hw_lock))
-		return;
-
 printk(KERN_ERR "DRM: %s A\n", __func__);
-	drm_idlelock_take(&file->master->lock);
 
 	mutex_lock(&dev->struct_mutex);
 	if (list_empty(&file_priv->obj_list)) {
 		mutex_unlock(&dev->struct_mutex);
-		drm_idlelock_release(&file->master->lock);
 		return;
 	}
 
@@ -251,8 +231,6 @@ printk(KERN_ERR "DRM: %s B\n", __func__);
 	}
 
 	mutex_unlock(&dev->struct_mutex);
-
-	drm_idlelock_release(&file->master->lock);
 
 	return;
 }
