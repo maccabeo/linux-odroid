@@ -20,7 +20,7 @@ static struct platform_device *mali_drm_pdev;
 static int mali_driver_load(struct drm_device *dev, unsigned long chipset)
 {
 	drm_mali_private_t *dev_priv;
-	printk(KERN_ERR "DRM: mali_driver_load start\n");
+	DRM_DEBUG_DRIVER("start\n");
 
 	dev_priv = kzalloc(sizeof(drm_mali_private_t), GFP_KERNEL);
 	if (dev_priv == NULL)
@@ -29,7 +29,7 @@ static int mali_driver_load(struct drm_device *dev, unsigned long chipset)
 	idr_init(&dev_priv->object_idr);
 	dev->dev_private = (void *)dev_priv;
 
-	printk(KERN_ERR "DRM: mali_driver_load done\n");
+	DRM_DEBUG_DRIVER("done\n");
 
 	return 0;
 }
@@ -37,13 +37,13 @@ static int mali_driver_load(struct drm_device *dev, unsigned long chipset)
 static int mali_driver_unload( struct drm_device *dev )
 {
 	drm_mali_private_t *dev_priv = dev->dev_private;
-	printk(KERN_ERR "DRM: mali_driver_unload start\n");
+	DRM_DEBUG_DRIVER("start\n");
 
 	idr_destroy(&dev_priv->object_idr);
 
 	kfree(dev_priv);
 
-	printk(KERN_ERR "DRM: mali_driver_unload done\n");
+	DRM_DEBUG_DRIVER("done\n");
 
 	return 0;
 }
@@ -83,7 +83,7 @@ void mali_driver_preclose(struct drm_device *dev, struct drm_file *file_priv)
 		 mali_reclaim_buffers(dev, file_priv);
 		 drm_idlelock_release(&file_priv->master->lock);
 	} else {
-		printk(KERN_ERR "DRM: %s : no master lock\n", __func__);
+		DRM_INFO("no master lock, cleaning up anyway.\n");
 		/* master disappeared, clean up stuff anyway and hope nothing
 		 * goes wrong */
 		 mali_reclaim_buffers(dev, file_priv);
@@ -121,13 +121,13 @@ static struct drm_driver mali_drm_driver =
 
 static int mali_drm_platform_probe(struct platform_device *pdev)
 {
-        pr_info("DRM: %s: driver name: %s, version %d.%d\n", __func__, DRIVER_NAME, DRIVER_MAJOR, DRIVER_MINOR);
+        DRM_INFO("driver name: %s, version %d.%d\n", DRIVER_NAME, DRIVER_MAJOR, DRIVER_MINOR);
         return drm_platform_init(&mali_drm_driver, pdev);
 }
 
 static int mali_drm_platform_remove(struct platform_device *pdev)
 {
-        pr_info("DRM: mali_platform_drm_remove()\n");
+	DRM_DEBUG("\n");
         drm_platform_exit(&mali_drm_driver, pdev);
         return 0;
 }

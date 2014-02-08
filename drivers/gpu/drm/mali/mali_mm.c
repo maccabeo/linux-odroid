@@ -27,7 +27,7 @@ static int mali_fb_init( struct drm_device *dev, void *data, struct drm_file *fi
 {
 	drm_mali_private_t *dev_priv = dev->dev_private;
 	drm_mali_fb_t *fb = data;
-	printk(KERN_ERR "DRM: %s\n", __func__);
+	DRM_DEBUG("\n");
 
 	mutex_lock(&dev->struct_mutex);
 	drm_mm_init(&dev_priv->vram_mm, 0, fb->size >> MALI_MM_ALIGN_SHIFT);
@@ -49,7 +49,7 @@ static int mali_drm_alloc(struct drm_device *dev, struct drm_file *file, void *d
 	struct mali_memblock *item;
 	unsigned long offset;
 	struct mali_file_private *file_priv = file->driver_priv;
-	printk(KERN_ERR "DRM: %s\n", __func__);
+	DRM_DEBUG("\n");
 
 	if (pool > MEM_TYPE) {
 		DRM_ERROR("Unknown memory type allocation\n");
@@ -121,7 +121,7 @@ static int mali_drm_free(struct drm_device *dev, void *data, struct drm_file *fi
 	drm_mali_private_t *dev_priv = dev->dev_private;
 	drm_mali_mem_t *mem = data;
 	struct mali_memblock *obj;
-	printk(KERN_ERR "DRM: %s\n", __func__);
+	DRM_DEBUG("\n");
 
 	mutex_lock(&dev->struct_mutex);
 	obj = idr_find(&dev_priv->object_idr, mem->free);
@@ -143,7 +143,7 @@ static int mali_drm_free(struct drm_device *dev, void *data, struct drm_file *fi
 
 static int mali_fb_alloc(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	printk(KERN_ERR "DRM: %s\n", __func__);
+	DRM_DEBUG("\n");
 	return mali_drm_alloc(dev, file_priv, data, VIDEO_TYPE);
 }
 
@@ -152,7 +152,7 @@ static int mali_ioctl_mem_init(struct drm_device *dev, void *data, struct drm_fi
 	drm_mali_private_t *dev_priv = dev->dev_private;
 	drm_mali_mem_t *mem= data;
 	dev_priv = dev->dev_private;
-	printk(KERN_ERR "DRM: %s\n", __func__);
+	DRM_DEBUG("\n");
 
 	mutex_lock(&dev->struct_mutex);
 	drm_mm_init(&dev_priv->mem_mm, 0, mem->size >> MALI_MM_ALIGN_SHIFT);
@@ -169,7 +169,7 @@ static int mali_ioctl_mem_alloc(struct drm_device *dev, void *data,
 			       struct drm_file *file_priv)
 {
 
-	printk(KERN_ERR "DRM: %s\n", __func__);
+	DRM_DEBUG("\n");
 	return mali_drm_alloc(dev, file_priv, data, MEM_TYPE);
 }
 
@@ -188,7 +188,7 @@ void mali_lastclose(struct drm_device *dev)
 {
 	drm_mali_private_t *dev_priv = dev->dev_private;
 
-	printk(KERN_ERR "DRM: %s\n", __func__);
+	DRM_DEBUG("\n");
 	if (!dev_priv)
 	       return;
 
@@ -209,9 +209,7 @@ void mali_reclaim_buffers(struct drm_device * dev, struct drm_file *file)
 {
 	struct mali_file_private *file_priv = file->driver_priv;
 	struct mali_memblock *entry, *next;
-	printk(KERN_ERR "DRM: %s\n", __func__);
-
-printk(KERN_ERR "DRM: %s A\n", __func__);
+	DRM_DEBUG("\n");
 
 	mutex_lock(&dev->struct_mutex);
 	if (list_empty(&file_priv->obj_list)) {
@@ -219,7 +217,6 @@ printk(KERN_ERR "DRM: %s A\n", __func__);
 		return;
 	}
 
-printk(KERN_ERR "DRM: %s B\n", __func__);
 	mali_idle(dev);
 
 	list_for_each_entry_safe(entry, next, &file_priv->obj_list,
