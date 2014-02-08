@@ -263,6 +263,13 @@ static struct map_desc exynos5_iodesc[] __initdata = {
 	},
 };
 
+void exynos4_power_off(void)
+{
+	/* PS_HOLD might be active high or active low : flip the polarity bit */
+	writel(readl(S5P_PS_HOLD_CONTROL) ^ S5P_PS_HOLD_DATA,
+				S5P_PS_HOLD_CONTROL);
+}
+
 void exynos4_restart(enum reboot_mode mode, const char *cmd)
 {
 	__raw_writel(0x1, S5P_SWRESET);
