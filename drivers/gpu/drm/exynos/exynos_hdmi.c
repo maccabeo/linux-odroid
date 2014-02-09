@@ -2086,7 +2086,7 @@ static int hdmi_resume(struct device *dev)
 
 	enable_irq(hdata->irq);
 
-	if (pm_runtime_suspended(dev)) {
+	if (!pm_runtime_suspended(dev)) {
 		/* dpms callback should resume the hdmi. */
 		DRM_DEBUG_KMS("Already suspended\n");
 		return 0;

@@ -1318,7 +1318,7 @@ static int mixer_resume(struct device *dev)
 	struct exynos_drm_hdmi_context *drm_hdmi_ctx = get_mixer_context(dev);
 	struct mixer_context *ctx = drm_hdmi_ctx->ctx;
 
-	if (pm_runtime_suspended(dev)) {
+	if (!pm_runtime_suspended(dev)) {
 		/* dpms callback should resume the mixer. */
 		DRM_DEBUG_KMS("Already suspended\n");
 		return 0;
