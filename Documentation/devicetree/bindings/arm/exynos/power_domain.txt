@@ -24,6 +24,7 @@ Optional Properties:
 		are supported currently.
 - power-domains: phandle pointing to the parent power domain, for more details
 		 see Documentation/devicetree/bindings/power/power_domain.txt
+- domain-always-on: keeps the domain always enabled
 
 Node of a device using power domains must have a power-domains property
 defined with a phandle to respective power domain.
