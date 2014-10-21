@@ -31,40 +31,6 @@
 		mshc0 = &mshc_0;
 	};
 
-	cpus {
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		cpu@a00 {
-			compatible = "arm,cortex-a9";
-			device_type = "cpu";
-			reg = <0xa00>;
-			gic-offset = <0x0000>;
-
-			clocks = <&clock CLK_ARM_CLK>;
-			clock-names = "cpu";
-
-			operating-points = <
-				1500000 1350000
-				1400000 1287500
-				1300000 1250000
-				1200000 1187500
-				1100000 1137500
-				1000000 1087500
-				 900000 1037500
-				 800000 1000000
-				 700000  987500
-				 600000  975000
-				 500000  950000
-				 400000  925000
-				 300000  900000
-				 200000  900000
-			>;
-			clock-latency = <200000>;
-			boost-frequencies = <1500000>;
-		};
-	};
-
 	sysram@02020000 {
 		compatible = "mmio-sram";
 		reg = <0x02020000 0x40000>;

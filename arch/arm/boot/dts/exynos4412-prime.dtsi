@@ -1,16 +1,16 @@
 /*
- * Samsung's Exynos4412 SoC device tree source
+ * Samsung's Exynos4412 Prime SoC device tree source
  *
- * Copyright (c) 2012 Samsung Electronics Co., Ltd.
+ * Copyright (c) 2014 Samsung Electronics Co., Ltd.
  *		http://www.samsung.com
  *
- * Samsung's Exynos4412 SoC device nodes are listed in this file. Exynos4412
+ * Samsung's Exynos4412 Prime SoC device nodes are listed in this file. Exynos4412
  * based board files can include this file and provide values for board specfic
  * bindings.
  *
  * Note: This file does not include device nodes for all the controllers in
- * Exynos4412 SoC. As device tree coverage for Exynos4412 increases, additional
- * nodes can be added to this file.
+ * Exynos4412 Prime SoC. As device tree coverage for Exynos4412 increases,
+ * additional nodes can be added to this file.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -20,7 +20,7 @@
 #include "exynos4x12.dtsi"
 
 / {
-	compatible = "samsung,exynos4412", "samsung,exynos4";
+	compatible = "samsung,exynos4412", "samsung,exynos4412-prime", "samsung,exynos4";
 
 	cpus {
 		#address-cells = <1>;
@@ -36,13 +36,15 @@
 			clock-names = "cpu";
 
 			operating-points = <
-				1500000 1350000
-				1400000 1287500
-				1300000 1250000
-				1200000 1187500
-				1100000 1137500
-				1000000 1087500
-				 900000 1037500
+				1704000 1375000
+				1600000 1350000
+				1500000 1300000
+				1400000 1225000
+				1300000 1175000
+				1200000 1125000
+				1100000 1075000
+				1000000 1037500
+				 900000 1012500
 				 800000 1000000
 				 700000  987500
 				 600000  975000
@@ -52,7 +54,7 @@
 				 200000  900000
 			>;
 			clock-latency = <200000>;
-			boost-frequencies = <1500000>;
+			boost-frequencies = <1704000>;
 		};
 
 		cpu@a01 {
@@ -79,7 +81,9 @@
 
 	clock: clock-controller@10030000 {
 		samsung,armclk-cells = <10>;
-		samsung,armclk-divider-table = <1500000 3 7 0 6 1 2 6 0 7>,
+		samsung,armclk-divider-table = <1704000 3 7 0 6 1 2 7 0 7>,
+					       <1600000 3 7 0 6 1 2 6 0 7>,
+					       <1500000 3 7 0 6 1 2 6 0 7>,
 					       <1400000 3 7 0 6 1 2 6 0 6>,
 					       <1300000 3 7 0 5 1 2 5 0 6>,
 					       <1200000 3 7 0 5 1 2 5 0 5>,
