@@ -11,14 +11,104 @@
  * published by the Free Software Foundation.
 */
 
-#include "exynos4412-odroidx.dts"
+/dts-v1/;
+#include "exynos4412-prime.dtsi"
+#include "exynos4412-odroid-common.dtsi"
 
 / {
 	model = "Hardkernel ODROID-X2 board based on Exynos4412";
 	compatible = "hardkernel,odroid-x2", "samsung,exynos4412", "samsung,exynos4";
 
+	cpus {
+		cpu@a00 {
+			cpu0-supply = <&buck2_reg>;
+		};
+	};
+
 	memory {
 		reg = <0x40000000 0x7FF00000>;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led1 {
+			label = "led1:heart";
+			gpios = <&gpc1 0 1>;
+			default-state = "on";
+			linux,default-trigger = "heartbeat";
+		};
+		led2 {
+			label = "led2:mmc0";
+			gpios = <&gpc1 2 1>;
+			default-state = "on";
+			linux,default-trigger = "mmc0";
+		};
+	};
+
+	serial@13820000 {
+		status = "okay";
+	};
+
+	serial@13830000 {
+		status = "okay";
+	};
+
+	gpio_keys {
+		pinctrl-0 = <&gpio_power_key &gpio_home_key>;
+
+		home_key {
+			interrupt-parent = <&gpx2>;
+			interrupts = <2 0>;
+			gpios = <&gpx2 2 0>;
+			linux,code = <KEY_HOME>;
+			label = "home key";
+			debounce-interval = <10>;
+			gpio-key,wakeup;
+		};
+	};
+
+	regulator_p3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "p3v3_en";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&gpa1 1 1>;
+		enable-active-high;
+		regulator-always-on;
+	};
+};
+
+&emmc {
+	vmmc-supply = <&buck8_reg>;
+};
+
+&max77686 {
+	voltage-regulators {
+		ldo22_reg: LDO22 {
+			regulator-name = "unused_2.8V";
+			regulator-min-microvolt = <2800000>;
+			regulator-max-microvolt = <2800000>;
+		};
+
+		/* On the X2 this buck regulator supplies the core of the eMMC. */
+		buck8_reg: BUCK8 {
+			regulator-name = "vddf_emmc_2.85V";
+			regulator-min-microvolt = <2850000>;
+			regulator-max-microvolt = <2850000>;
+		};
+	};
+};
+
+&ehci {
+	port@1 {
+		status = "okay";
+	};
+};
+
+&pinctrl_1 {
+	gpio_home_key: home_key {
+		samsung,pins = "gpx2-2";
+		samsung,pin-pud = <0>;
 	};
 };
 

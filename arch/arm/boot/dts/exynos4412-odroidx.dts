@@ -12,11 +12,18 @@
 */
 
 /dts-v1/;
+#include "exynos4412.dtsi"
 #include "exynos4412-odroid-common.dtsi"
 
 / {
 	model = "Hardkernel ODROID-X board based on Exynos4412";
 	compatible = "hardkernel,odroid-x", "samsung,exynos4412", "samsung,exynos4";
+
+	cpus {
+		cpu@a00 {
+			cpu0-supply = <&buck2_reg>;
+		};
+	};
 
 	memory {
 		reg = <0x40000000 0x3FF00000>;
@@ -76,6 +83,7 @@
 };
 
 &max77686 {
+	/* TODO: Is this regulator setup valid for the ODROID-X ? */
 	voltage-regulators {
 		ldo22_reg: LDO22 {
 			regulator-name = "unused_2.8V";
@@ -83,7 +91,6 @@
 			regulator-max-microvolt = <2800000>;
 		};
 
-		/* On the X2 this buck regulator supplies the core of the eMMC. */
 		buck8_reg: BUCK8 {
 			regulator-name = "vddf_emmc_2.85V";
 			regulator-min-microvolt = <2850000>;
