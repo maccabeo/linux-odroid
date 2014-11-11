@@ -257,6 +257,7 @@
 					regulator-min-microvolt = <2800000>;
 					regulator-max-microvolt = <2800000>;
 					regulator-boot-on;
+					regulator-always-on;
 					LDO4-supply = <&reg_sysvdd>;
 				};
 
@@ -401,6 +402,7 @@
 					regulator-min-microvolt = <2800000>;
 					regulator-max-microvolt = <2800000>;
 					regulator-boot-on;
+					regulator-always-on;
 					LDO21-supply = <&reg_sysvdd>;
 				};
 
