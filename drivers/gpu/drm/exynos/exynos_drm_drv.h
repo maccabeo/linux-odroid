@@ -80,6 +80,7 @@ extern void exynos4412_qos(u8 tm, u8 ac);
  * @transparency: transparency on or off.
  * @activated: activated or not.
  * @enabled: enabled or not.
+ * @resume: to resume or not.
  *
  * this structure is common to exynos SoC and its contents would be copied
  * to hardware specific overlay info.
@@ -114,6 +115,7 @@ struct exynos_drm_plane {
 	bool transparency:1;
 	bool activated:1;
 	bool enabled:1;
+	bool resume:1;
 };
 
 /*
@@ -174,7 +176,6 @@ struct exynos_drm_display {
  * @disable_vblank: specific driver callback for disabling vblank interrupt.
  * @wait_for_vblank: wait for vblank interrupt to make sure that
  *	hardware overlay is updated.
- * @win_mode_set: copy drm overlay info to hw specific overlay info.
  * @win_commit: apply hardware specific overlay data to registers.
  * @win_disable: disable hardware specific overlay.
  * @te_handler: trigger to transfer video image at the tearing effect
@@ -190,8 +191,6 @@ struct exynos_drm_crtc_ops {
 	int (*enable_vblank)(struct exynos_drm_crtc *crtc);
 	void (*disable_vblank)(struct exynos_drm_crtc *crtc);
 	void (*wait_for_vblank)(struct exynos_drm_crtc *crtc);
-	void (*win_mode_set)(struct exynos_drm_crtc *crtc,
-				struct exynos_drm_plane *plane);
 	void (*win_commit)(struct exynos_drm_crtc *crtc, int zpos);
 	void (*win_disable)(struct exynos_drm_crtc *crtc, int zpos);
 	void (*te_handler)(struct exynos_drm_crtc *crtc);
